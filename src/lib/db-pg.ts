@@ -1,5 +1,4 @@
 import { Pool } from "pg";
-import config from "@/config";
 
 // Create a PostgreSQL connection pool
 const pool = new Pool({

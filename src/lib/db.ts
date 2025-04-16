@@ -1,6 +1,5 @@
 import "server-only";
 import { Pool } from "pg";
-import config from "@/config";
 
 /**
  * Create a database connection pool

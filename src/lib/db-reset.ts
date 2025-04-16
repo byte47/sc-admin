@@ -1,7 +1,4 @@
-import fs from "fs";
-import path from "path";
 import { Pool } from "pg";
-import config from "@/config";
 
 async function initializeSchema(client: any) {
   // Create access_history table
