@@ -31,9 +31,14 @@ export async function POST(request: NextRequest) {
 
     try {
       // Store the messages without access checking
-      const result = await addBulkMessagesAction(name, messages);
+      const results = await addBulkMessagesAction(name, messages);
 
-      if (result.blocked || result.flagged) {
+      // Check if any message was blocked or flagged
+      const hasBlockedOrFlagged = results.some(
+        (result) => result.blocked || result.flagged
+      );
+
+      if (hasBlockedOrFlagged) {
         return new Response("block", {
           status: 200,
         });

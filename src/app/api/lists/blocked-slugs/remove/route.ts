@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove from blocked slugs list using server action
-    await removeFromBlockedSlugsAction(id);
+    await removeFromBlockedSlugsAction(id.toString());
 
     // Redirect back to the lists page
     return NextResponse.redirect(

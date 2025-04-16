@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove from allowed slugs list using server action
-    await removeFromAllowedSlugsAction(id);
+    await removeFromAllowedSlugsAction(id.toString());
 
     // Redirect back to the lists page
     return NextResponse.redirect(

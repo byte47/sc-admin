@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove from allowed list using server action
-    await removeFromAllowedNamesAction(id);
+    await removeFromAllowedNamesAction(id.toString());
 
     // Redirect back to the lists page
     return NextResponse.redirect(new URL("/admin/lists", request.url));

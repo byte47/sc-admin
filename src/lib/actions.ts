@@ -43,7 +43,11 @@ export async function getAccessHistoryAction(
   limit = 100,
   offset = 0
 ): Promise<HistoryItem[]> {
-  return getAccessHistory(limit, offset);
+  const history = await getAccessHistory(limit, offset);
+  return history.map((item) => ({
+    ...item,
+    access_time: item.access_time.toISOString(),
+  }));
 }
 
 // Blocked names operations
@@ -61,10 +65,9 @@ export async function addToBlockedNamesAction(value: string) {
   return result;
 }
 
-export async function removeFromBlockedNamesAction(id: number) {
-  const result = await removeFromBlockedNames(id);
+export async function removeFromBlockedNamesAction(value: string) {
+  await removeFromBlockedNames(value);
   revalidatePath("/admin/lists");
-  return result;
 }
 
 export async function getBlockedNamesAction(): Promise<ListItem[]> {
@@ -87,10 +90,9 @@ export async function addToBlockedSlugsAction(value: string) {
   return result;
 }
 
-export async function removeFromBlockedSlugsAction(id: number) {
-  const result = await removeFromBlockedSlugs(id);
+export async function removeFromBlockedSlugsAction(value: string) {
+  await removeFromBlockedSlugs(value);
   revalidatePath("/admin/lists");
-  return result;
 }
 
 export async function getBlockedSlugsAction(): Promise<ListItem[]> {
@@ -113,10 +115,9 @@ export async function addToAllowedNamesAction(value: string) {
   return result;
 }
 
-export async function removeFromAllowedNamesAction(id: number) {
-  const result = await removeFromAllowedNames(id);
+export async function removeFromAllowedNamesAction(value: string) {
+  await removeFromAllowedNames(value);
   revalidatePath("/admin/lists");
-  return result;
 }
 
 export async function getAllowedNamesAction(): Promise<ListItem[]> {
@@ -139,10 +140,9 @@ export async function addToAllowedSlugsAction(value: string) {
   return result;
 }
 
-export async function removeFromAllowedSlugsAction(id: number) {
-  const result = await removeFromAllowedSlugs(id);
+export async function removeFromAllowedSlugsAction(value: string) {
+  await removeFromAllowedSlugs(value);
   revalidatePath("/admin/lists");
-  return result;
 }
 
 export async function getAllowedSlugsAction(): Promise<ListItem[]> {
@@ -243,7 +243,11 @@ export async function getMessagesAction(
   limit = 100,
   offset = 0
 ): Promise<Message[]> {
-  return getMessages(limit, offset);
+  const messages = await getMessages(limit, offset);
+  return messages.map((msg) => ({
+    ...msg,
+    created_at: msg.created_at.toISOString(),
+  }));
 }
 
 export async function getMessagesByNameAction(
@@ -251,7 +255,11 @@ export async function getMessagesByNameAction(
   limit = 100,
   offset = 0
 ): Promise<Message[]> {
-  return getMessagesByName(name, limit, offset);
+  const messages = await getMessagesByName(name, limit, offset);
+  return messages.map((msg) => ({
+    ...msg,
+    created_at: msg.created_at.toISOString(),
+  }));
 }
 
 export async function getMessagesBySlugAction(
@@ -259,7 +267,11 @@ export async function getMessagesBySlugAction(
   limit = 100,
   offset = 0
 ): Promise<Message[]> {
-  return getMessagesBySlug(slug, limit, offset);
+  const messages = await getMessagesBySlug(slug, limit, offset);
+  return messages.map((msg) => ({
+    ...msg,
+    created_at: msg.created_at.toISOString(),
+  }));
 }
 
 export async function getAccessLogsAction(

@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove from blocked list using server action
-    await removeFromBlockedNamesAction(id);
+    await removeFromBlockedNamesAction(id.toString());
 
     // Redirect back to the lists page
     return NextResponse.redirect(new URL("/admin/lists", request.url));

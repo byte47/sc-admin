@@ -21,9 +21,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
     // Remove from allowed names list using server action
-    await removeFromAllowedNamesAction(id);
+    await removeFromAllowedNamesAction(id.toString());
 
     // Redirect back to the lists page
     return NextResponse.redirect(

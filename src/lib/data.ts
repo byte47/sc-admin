@@ -41,153 +41,176 @@ export type Message = {
 };
 
 // Access history operations
-export function logAccess(
+export async function logAccess(
   name: string,
   slug: string,
   result: "allow" | "block",
   reason?: string
 ) {
-  const stmt = db.prepare(`
-    INSERT INTO access_history (name, slug, result, reason)
-    VALUES (?, ?, ?, ?)
-  `);
-
-  return stmt.run(name, slug, result, reason || null);
+  const { rows } = await db.query(
+    `INSERT INTO access_history (name, slug, result, reason)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [name, slug, result, reason || null]
+  );
+  return rows[0];
 }
 
-export function getAccessHistory(limit = 100, offset = 0): HistoryItem[] {
-  const stmt = db.prepare(`
-    SELECT * FROM access_history
-    ORDER BY access_time DESC
-    LIMIT ? OFFSET ?
-  `);
-
-  return stmt.all(limit, offset) as HistoryItem[];
+export async function getAccessHistory(
+  limit = 100,
+  offset = 0
+): Promise<HistoryItem[]> {
+  const { rows } = await db.query(
+    `SELECT * FROM access_history
+     ORDER BY access_time DESC
+     LIMIT $1 OFFSET $2`,
+    [limit, offset]
+  );
+  return rows;
 }
 
 // Blocked list operations
-export function isBlocked(value: string): boolean {
-  const stmt = db.prepare("SELECT 1 FROM blocked_list WHERE value = ?");
-  return !!stmt.get(value);
-}
-
-export function addToBlockedList(value: string) {
-  const stmt = db.prepare(
-    "INSERT OR IGNORE INTO blocked_list (value) VALUES (?)"
+export async function isBlocked(value: string): Promise<boolean> {
+  const { rows } = await db.query(
+    "SELECT 1 FROM blocked_list WHERE value = $1",
+    [value]
   );
-  return stmt.run(value);
+  return rows.length > 0;
 }
 
-export function removeFromBlockedList(id: number) {
-  const stmt = db.prepare("DELETE FROM blocked_list WHERE id = ?");
-  return stmt.run(id);
+export async function addToBlockedList(value: string) {
+  const { rows } = await db.query(
+    "INSERT INTO blocked_list (value) VALUES ($1) ON CONFLICT DO NOTHING RETURNING *",
+    [value]
+  );
+  return rows[0];
 }
 
-export function getBlockedList(): ListItem[] {
-  const stmt = db.prepare("SELECT * FROM blocked_list ORDER BY value");
-  return stmt.all() as ListItem[];
+export async function removeFromBlockedList(id: number) {
+  const { rows } = await db.query(
+    "DELETE FROM blocked_list WHERE id = $1 RETURNING *",
+    [id]
+  );
+  return rows[0];
+}
+
+export async function getBlockedList(): Promise<ListItem[]> {
+  const { rows } = await db.query("SELECT * FROM blocked_list ORDER BY value");
+  return rows;
 }
 
 // Allowed list operations
-export function isAllowed(value: string): boolean {
-  const stmt = db.prepare("SELECT 1 FROM allowed_list WHERE value = ?");
-  return !!stmt.get(value);
-}
-
-export function addToAllowedList(value: string) {
-  const stmt = db.prepare(
-    "INSERT OR IGNORE INTO allowed_list (value) VALUES (?)"
+export async function isAllowed(value: string): Promise<boolean> {
+  const { rows } = await db.query(
+    "SELECT 1 FROM allowed_list WHERE value = $1",
+    [value]
   );
-  return stmt.run(value);
+  return rows.length > 0;
 }
 
-export function removeFromAllowedList(id: number) {
-  const stmt = db.prepare("DELETE FROM allowed_list WHERE id = ?");
-  return stmt.run(id);
+export async function addToAllowedList(value: string) {
+  const { rows } = await db.query(
+    "INSERT INTO allowed_list (value) VALUES ($1) ON CONFLICT DO NOTHING RETURNING *",
+    [value]
+  );
+  return rows[0];
 }
 
-export function getAllowedList(): ListItem[] {
-  const stmt = db.prepare("SELECT * FROM allowed_list ORDER BY value");
-  return stmt.all() as ListItem[];
+export async function removeFromAllowedList(id: number) {
+  const { rows } = await db.query(
+    "DELETE FROM allowed_list WHERE id = $1 RETURNING *",
+    [id]
+  );
+  return rows[0];
+}
+
+export async function getAllowedList(): Promise<ListItem[]> {
+  const { rows } = await db.query("SELECT * FROM allowed_list ORDER BY value");
+  return rows;
 }
 
 // Verification queue operations
-export function addToQueue(name: string, slug: string) {
-  const stmt = db.prepare(`
-    INSERT INTO verification_queue (name, slug)
-    VALUES (?, ?)
-  `);
-
-  return stmt.run(name, slug);
+export async function addToQueue(name: string, slug: string) {
+  const { rows } = await db.query(
+    `INSERT INTO verification_queue (name, slug)
+     VALUES ($1, $2)
+     RETURNING *`,
+    [name, slug]
+  );
+  return rows[0];
 }
 
-export function getVerificationQueue(status = "pending"): QueueItem[] {
-  const stmt = db.prepare(`
-    SELECT * FROM verification_queue 
-    WHERE status = ?
-    ORDER BY queued_at DESC
-  `);
-
-  return stmt.all(status) as QueueItem[];
+export async function getVerificationQueue(
+  status = "pending"
+): Promise<QueueItem[]> {
+  const { rows } = await db.query(
+    `SELECT * FROM verification_queue 
+     WHERE status = $1
+     ORDER BY queued_at DESC`,
+    [status]
+  );
+  return rows;
 }
 
-export function updateQueueItemStatus(
+export async function updateQueueItemStatus(
   id: number,
   status: "pending" | "reviewed"
 ) {
-  const stmt = db.prepare(
-    "UPDATE verification_queue SET status = ? WHERE id = ?"
+  const { rows } = await db.query(
+    "UPDATE verification_queue SET status = $1 WHERE id = $2 RETURNING *",
+    [status, id]
   );
-  return stmt.run(status, id);
+  return rows[0];
 }
 
 // Messages operations
-export function addMessage(name: string, content: string) {
+export async function addMessage(name: string, content: string) {
   const slug = slugify(name);
-  const stmt = db.prepare(`
-    INSERT INTO messages (name, slug, content)
-    VALUES (?, ?, ?)
-  `);
-
-  return stmt.run(name, slug, content);
+  const { rows } = await db.query(
+    `INSERT INTO messages (name, slug, content)
+     VALUES ($1, $2, $3)
+     RETURNING *`,
+    [name, slug, content]
+  );
+  return rows[0];
 }
 
-export function getMessages(limit = 100, offset = 0): Message[] {
-  const stmt = db.prepare(`
-    SELECT * FROM messages
-    ORDER BY created_at DESC
-    LIMIT ? OFFSET ?
-  `);
-
-  return stmt.all(limit, offset) as Message[];
+export async function getMessages(limit = 100, offset = 0): Promise<Message[]> {
+  const { rows } = await db.query(
+    `SELECT * FROM messages
+     ORDER BY created_at DESC
+     LIMIT $1 OFFSET $2`,
+    [limit, offset]
+  );
+  return rows;
 }
 
-export function getMessagesByName(
+export async function getMessagesByName(
   name: string,
   limit = 100,
   offset = 0
-): Message[] {
-  const stmt = db.prepare(`
-    SELECT * FROM messages
-    WHERE LOWER(name) = LOWER(?)
-    ORDER BY created_at DESC
-    LIMIT ? OFFSET ?
-  `);
-
-  return stmt.all(name, limit, offset) as Message[];
+): Promise<Message[]> {
+  const { rows } = await db.query(
+    `SELECT * FROM messages
+     WHERE LOWER(name) = LOWER($1)
+     ORDER BY created_at DESC
+     LIMIT $2 OFFSET $3`,
+    [name, limit, offset]
+  );
+  return rows;
 }
 
-export function getMessagesBySlug(
+export async function getMessagesBySlug(
   slug: string,
   limit = 100,
   offset = 0
-): Message[] {
-  const stmt = db.prepare(`
-    SELECT * FROM messages
-    WHERE LOWER(slug) = LOWER(?)
-    ORDER BY created_at DESC
-    LIMIT ? OFFSET ?
-  `);
-
-  return stmt.all(slug, limit, offset) as Message[];
+): Promise<Message[]> {
+  const { rows } = await db.query(
+    `SELECT * FROM messages
+     WHERE LOWER(slug) = LOWER($1)
+     ORDER BY created_at DESC
+     LIMIT $2 OFFSET $3`,
+    [slug, limit, offset]
+  );
+  return rows;
 }
