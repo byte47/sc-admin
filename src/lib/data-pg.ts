@@ -48,7 +48,7 @@ export async function getAccessHistory(
   try {
     const offset = (page - 1) * limit;
     let whereClause = "";
-    let params: any[] = [limit, offset];
+    const params: any[] = [limit, offset];
 
     if (search) {
       whereClause = `
@@ -371,7 +371,7 @@ export async function getMessages(
   try {
     const offset = (page - 1) * limit;
     let whereClause = "";
-    let params: any[] = [limit, offset];
+    const params: any[] = [limit, offset];
 
     if (search) {
       whereClause = `

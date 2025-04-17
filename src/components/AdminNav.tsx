@@ -7,7 +7,6 @@ import {
   List,
   ClipboardCheck,
   History,
-  Settings,
   MessagesSquare,
   FileText,
 } from "lucide-react";
