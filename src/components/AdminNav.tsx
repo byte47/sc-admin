@@ -19,7 +19,6 @@ const links = [
   { href: "/admin/messages", label: "Messages", icon: MessagesSquare },
   { href: "/admin/logs", label: "API Logs", icon: FileText },
   { href: "/admin/history", label: "History", icon: History },
-  { href: "/admin/maintenance", label: "Maintenance", icon: Settings },
 ];
 
 export default function AdminNav() {
