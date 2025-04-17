@@ -40,21 +40,25 @@ export async function logAccessAction(
 }
 
 export async function getAccessHistoryAction(
-  limit = 100,
-  offset = 0
-): Promise<HistoryItem[]> {
-  const history = await getAccessHistory(limit, offset);
-  return history.map((item) => ({
-    ...item,
-    access_time: item.access_time.toISOString(),
-  }));
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<{ items: HistoryItem[]; total: number }> {
+  const result = await getAccessHistory(page, limit, search);
+  return {
+    items: result.items.map((item) => ({
+      ...item,
+      access_time: item.access_time.toISOString(),
+    })),
+    total: result.total,
+  };
 }
 
 // Blocked names operations
 export async function isNameBlockedAction(name: string): Promise<boolean> {
   const blockedNames = await getBlockedNames();
-  return blockedNames.some(
-    (value) => value.toLowerCase() === name.toLowerCase()
+  return blockedNames.items.some(
+    (value: string) => value.toLowerCase() === name.toLowerCase()
   );
 }
 
@@ -70,16 +74,26 @@ export async function removeFromBlockedNamesAction(value: string) {
   revalidatePath("/admin/lists");
 }
 
-export async function getBlockedNamesAction(): Promise<ListItem[]> {
-  const names = await getBlockedNames();
-  return names.map((value, index) => ({ id: index + 1, value }));
+export async function getBlockedNamesAction(
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<{ items: ListItem[]; total: number }> {
+  const result = await getBlockedNames(page, limit, search);
+  return {
+    items: result.items.map((value, index) => ({
+      id: (page - 1) * limit + index + 1,
+      value,
+    })),
+    total: result.total,
+  };
 }
 
 // Blocked slugs operations
 export async function isSlugBlockedAction(slug: string): Promise<boolean> {
   const blockedSlugs = await getBlockedSlugs();
-  return blockedSlugs.some(
-    (value) => value.toLowerCase() === slug.toLowerCase()
+  return blockedSlugs.items.some(
+    (value: string) => value.toLowerCase() === slug.toLowerCase()
   );
 }
 
@@ -95,16 +109,26 @@ export async function removeFromBlockedSlugsAction(value: string) {
   revalidatePath("/admin/lists");
 }
 
-export async function getBlockedSlugsAction(): Promise<ListItem[]> {
-  const slugs = await getBlockedSlugs();
-  return slugs.map((value, index) => ({ id: index + 1, value }));
+export async function getBlockedSlugsAction(
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<{ items: ListItem[]; total: number }> {
+  const result = await getBlockedSlugs(page, limit, search);
+  return {
+    items: result.items.map((value, index) => ({
+      id: (page - 1) * limit + index + 1,
+      value,
+    })),
+    total: result.total,
+  };
 }
 
 // Allowed names operations
 export async function isNameAllowedAction(name: string): Promise<boolean> {
   const allowedNames = await getAllowedNames();
-  return allowedNames.some(
-    (value) => value.toLowerCase() === name.toLowerCase()
+  return allowedNames.items.some(
+    (value: string) => value.toLowerCase() === name.toLowerCase()
   );
 }
 
@@ -120,16 +144,26 @@ export async function removeFromAllowedNamesAction(value: string) {
   revalidatePath("/admin/lists");
 }
 
-export async function getAllowedNamesAction(): Promise<ListItem[]> {
-  const names = await getAllowedNames();
-  return names.map((value, index) => ({ id: index + 1, value }));
+export async function getAllowedNamesAction(
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<{ items: ListItem[]; total: number }> {
+  const result = await getAllowedNames(page, limit, search);
+  return {
+    items: result.items.map((value, index) => ({
+      id: (page - 1) * limit + index + 1,
+      value,
+    })),
+    total: result.total,
+  };
 }
 
 // Allowed slugs operations
 export async function isSlugAllowedAction(slug: string): Promise<boolean> {
   const allowedSlugs = await getAllowedSlugs();
-  return allowedSlugs.some(
-    (value) => value.toLowerCase() === slug.toLowerCase()
+  return allowedSlugs.items.some(
+    (value: string) => value.toLowerCase() === slug.toLowerCase()
   );
 }
 
@@ -145,9 +179,19 @@ export async function removeFromAllowedSlugsAction(value: string) {
   revalidatePath("/admin/lists");
 }
 
-export async function getAllowedSlugsAction(): Promise<ListItem[]> {
-  const slugs = await getAllowedSlugs();
-  return slugs.map((value, index) => ({ id: index + 1, value }));
+export async function getAllowedSlugsAction(
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<{ items: ListItem[]; total: number }> {
+  const result = await getAllowedSlugs(page, limit, search);
+  return {
+    items: result.items.map((value, index) => ({
+      id: (page - 1) * limit + index + 1,
+      value,
+    })),
+    total: result.total,
+  };
 }
 
 // Verification queue operations
@@ -240,14 +284,18 @@ export async function addBulkMessagesAction(name: string, messages: string[]) {
 }
 
 export async function getMessagesAction(
-  limit = 100,
-  offset = 0
-): Promise<Message[]> {
-  const messages = await getMessages(limit, offset);
-  return messages.map((msg) => ({
-    ...msg,
-    created_at: msg.created_at.toISOString(),
-  }));
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<{ items: Message[]; total: number }> {
+  const result = await getMessages(page, limit, search);
+  return {
+    items: result.items.map((msg) => ({
+      ...msg,
+      created_at: msg.created_at.toISOString(),
+    })),
+    total: result.total,
+  };
 }
 
 export async function getMessagesByNameAction(

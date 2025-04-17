@@ -14,11 +14,80 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { getMessagesAction } from "@/lib/actions";
 import { BLACKLISTED_NAME_WORDS } from "@/lib/utils";
 
-async function MessagesTable() {
-  const messages = await getMessagesAction(100, 0);
+const ITEMS_PER_PAGE = 10;
+
+interface MessagesTableProps {
+  searchParams: {
+    page?: string;
+    search?: string;
+  };
+}
+
+async function MessagesTable({ searchParams }: MessagesTableProps) {
+  const currentPage = Number(searchParams.page) || 1;
+  const searchTerm = searchParams.search || "";
+
+  const { items: messages, total } = await getMessagesAction(
+    currentPage,
+    ITEMS_PER_PAGE,
+    searchTerm
+  );
+
+  // Calculate pagination values
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | "ellipsis")[] = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total pages is less than max visible
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+
+      if (currentPage > 3) {
+        pages.push("ellipsis");
+      }
+
+      // Show current page and surrounding pages
+      for (
+        let i = Math.max(2, currentPage - 1);
+        i <= Math.min(totalPages - 1, currentPage + 1);
+        i++
+      ) {
+        pages.push(i);
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push("ellipsis");
+      }
+
+      // Always show last page
+      if (totalPages > 1) {
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
 
   // Function to check if a message contains potentially problematic content
   const checkMessageContent = (content: string) => {
@@ -48,78 +117,143 @@ async function MessagesTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Messages</CardTitle>
-        <CardDescription>
-          Latest messages received from users, ordered by most recent.
-        </CardDescription>
+        <div className='flex justify-between items-center'>
+          <div>
+            <CardTitle>Messages</CardTitle>
+            <CardDescription>
+              Latest messages received from users ({total} total)
+            </CardDescription>
+          </div>
+          <div className='w-64'>
+            <Input
+              type='search'
+              placeholder='Search messages...'
+              defaultValue={searchTerm}
+              className='w-full'
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {messages.length === 0 ? (
           <p className='text-center py-6 text-muted-foreground'>
-            No messages found.
+            {searchTerm
+              ? "No messages found matching your search."
+              : "No messages found."}
           </p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead className='w-[40%]'>Message</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {messages.map((message) => {
-                const { flagged, blocked } = checkMessageContent(
-                  message.content
-                );
-                return (
-                  <TableRow
-                    key={message.id}
-                    className={
-                      blocked ? "bg-red-50" : flagged ? "bg-yellow-50" : ""
-                    }
-                  >
-                    <TableCell>{message.id}</TableCell>
-                    <TableCell>{message.name}</TableCell>
-                    <TableCell>{message.slug}</TableCell>
-                    <TableCell className='max-w-xs truncate'>
-                      {message.content}
-                    </TableCell>
-                    <TableCell>
-                      {blocked && (
-                        <span className='text-red-600 font-semibold'>
-                          Blocked
-                        </span>
-                      )}
-                      {flagged && !blocked && (
-                        <span className='text-amber-600 font-semibold'>
-                          Flagged
-                        </span>
-                      )}
-                      {!flagged && !blocked && (
-                        <span className='text-green-600'>OK</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(message.created_at).toLocaleString("en-US", {
-                        timeZone: "Asia/Kolkata",
-                      })}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Slug</TableHead>
+                  <TableHead className='w-[40%]'>Message</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {messages.map((message) => {
+                  const { flagged, blocked } = checkMessageContent(
+                    message.content
+                  );
+                  return (
+                    <TableRow
+                      key={message.id}
+                      className={
+                        blocked ? "bg-red-50" : flagged ? "bg-yellow-50" : ""
+                      }
+                    >
+                      <TableCell>{message.id}</TableCell>
+                      <TableCell>{message.name}</TableCell>
+                      <TableCell>{message.slug}</TableCell>
+                      <TableCell className='max-w-xs truncate'>
+                        {message.content}
+                      </TableCell>
+                      <TableCell>
+                        {blocked && (
+                          <span className='text-red-600 font-semibold'>
+                            Blocked
+                          </span>
+                        )}
+                        {flagged && !blocked && (
+                          <span className='text-amber-600 font-semibold'>
+                            Flagged
+                          </span>
+                        )}
+                        {!flagged && !blocked && (
+                          <span className='text-green-600'>OK</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(message.created_at).toLocaleString("en-US", {
+                          timeZone: "Asia/Kolkata",
+                        })}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+
+            {totalPages > 1 && (
+              <div className='mt-4'>
+                <Pagination>
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href={`?page=${currentPage - 1}${
+                            searchTerm ? `&search=${searchTerm}` : ""
+                          }`}
+                        />
+                      </PaginationItem>
+                    )}
+
+                    {getPageNumbers().map((pageNum, idx) => (
+                      <PaginationItem key={`${pageNum}-${idx}`}>
+                        {pageNum === "ellipsis" ? (
+                          <PaginationEllipsis />
+                        ) : (
+                          <PaginationLink
+                            href={`?page=${pageNum}${
+                              searchTerm ? `&search=${searchTerm}` : ""
+                            }`}
+                            isActive={pageNum === currentPage}
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        )}
+                      </PaginationItem>
+                    ))}
+
+                    {currentPage < totalPages && (
+                      <PaginationItem>
+                        <PaginationNext
+                          href={`?page=${currentPage + 1}${
+                            searchTerm ? `&search=${searchTerm}` : ""
+                          }`}
+                        />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
   );
 }
 
-export default function MessagesPage() {
+export default function MessagesPage({
+  searchParams,
+}: {
+  searchParams: { page?: string; search?: string };
+}) {
   return (
     <div className='space-y-6'>
       <div className='flex justify-between items-center'>
@@ -151,7 +285,7 @@ export default function MessagesPage() {
         </CardContent>
       </Card>
       <Suspense fallback={<p>Loading messages...</p>}>
-        <MessagesTable />
+        <MessagesTable searchParams={searchParams} />
       </Suspense>
     </div>
   );

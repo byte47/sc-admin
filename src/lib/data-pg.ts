@@ -40,18 +40,49 @@ export async function addAccessHistory(
 }
 
 export async function getAccessHistory(
-  limit = 100,
-  offset = 0
-): Promise<AccessHistory[]> {
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<{ items: AccessHistory[]; total: number }> {
   const client = await pool.connect();
   try {
-    const query = `
-      SELECT * FROM access_history
+    const offset = (page - 1) * limit;
+    let whereClause = "";
+    let params: any[] = [limit, offset];
+
+    if (search) {
+      whereClause = `
+        WHERE 
+          LOWER(name) LIKE LOWER($3) OR 
+          LOWER(slug) LIKE LOWER($3) OR 
+          LOWER(COALESCE(reason, '')) LIKE LOWER($3)
+      `;
+      params.push(`%${search}%`);
+    }
+
+    const countQuery = `
+      SELECT COUNT(*) 
+      FROM access_history
+      ${whereClause}
+    `;
+
+    const itemsQuery = `
+      SELECT * 
+      FROM access_history
+      ${whereClause}
       ORDER BY access_time DESC
       LIMIT $1 OFFSET $2
     `;
-    const result = await client.query(query, [limit, offset]);
-    return result.rows;
+
+    const [countResult, itemsResult] = await Promise.all([
+      client.query(countQuery, search ? [params[2]] : []),
+      client.query(itemsQuery, params),
+    ]);
+
+    return {
+      items: itemsResult.rows,
+      total: parseInt(countResult.rows[0].count),
+    };
   } finally {
     client.release();
   }
@@ -74,12 +105,26 @@ export async function addToBlockedNames(value: string) {
   }
 }
 
-export async function getBlockedNames(): Promise<string[]> {
+export async function getBlockedNames(
+  page: number = 1,
+  limit: number = 10
+): Promise<{ items: string[]; total: number }> {
   const client = await pool.connect();
   try {
-    const query = "SELECT value FROM blocked_names";
-    const result = await client.query(query);
-    return result.rows.map((row) => row.value);
+    const offset = (page - 1) * limit;
+    const countQuery = "SELECT COUNT(*) FROM blocked_names";
+    const itemsQuery =
+      "SELECT value FROM blocked_names ORDER BY value LIMIT $1 OFFSET $2";
+
+    const [countResult, itemsResult] = await Promise.all([
+      client.query(countQuery),
+      client.query(itemsQuery, [limit, offset]),
+    ]);
+
+    return {
+      items: itemsResult.rows.map((row) => row.value),
+      total: parseInt(countResult.rows[0].count),
+    };
   } finally {
     client.release();
   }
@@ -112,12 +157,26 @@ export async function addToBlockedSlugs(value: string) {
   }
 }
 
-export async function getBlockedSlugs(): Promise<string[]> {
+export async function getBlockedSlugs(
+  page: number = 1,
+  limit: number = 10
+): Promise<{ items: string[]; total: number }> {
   const client = await pool.connect();
   try {
-    const query = "SELECT value FROM blocked_slugs";
-    const result = await client.query(query);
-    return result.rows.map((row) => row.value);
+    const offset = (page - 1) * limit;
+    const countQuery = "SELECT COUNT(*) FROM blocked_slugs";
+    const itemsQuery =
+      "SELECT value FROM blocked_slugs ORDER BY value LIMIT $1 OFFSET $2";
+
+    const [countResult, itemsResult] = await Promise.all([
+      client.query(countQuery),
+      client.query(itemsQuery, [limit, offset]),
+    ]);
+
+    return {
+      items: itemsResult.rows.map((row) => row.value),
+      total: parseInt(countResult.rows[0].count),
+    };
   } finally {
     client.release();
   }
@@ -150,12 +209,26 @@ export async function addToAllowedNames(value: string) {
   }
 }
 
-export async function getAllowedNames(): Promise<string[]> {
+export async function getAllowedNames(
+  page: number = 1,
+  limit: number = 10
+): Promise<{ items: string[]; total: number }> {
   const client = await pool.connect();
   try {
-    const query = "SELECT value FROM allowed_names";
-    const result = await client.query(query);
-    return result.rows.map((row) => row.value);
+    const offset = (page - 1) * limit;
+    const countQuery = "SELECT COUNT(*) FROM allowed_names";
+    const itemsQuery =
+      "SELECT value FROM allowed_names ORDER BY value LIMIT $1 OFFSET $2";
+
+    const [countResult, itemsResult] = await Promise.all([
+      client.query(countQuery),
+      client.query(itemsQuery, [limit, offset]),
+    ]);
+
+    return {
+      items: itemsResult.rows.map((row) => row.value),
+      total: parseInt(countResult.rows[0].count),
+    };
   } finally {
     client.release();
   }
@@ -188,12 +261,26 @@ export async function addToAllowedSlugs(value: string) {
   }
 }
 
-export async function getAllowedSlugs(): Promise<string[]> {
+export async function getAllowedSlugs(
+  page: number = 1,
+  limit: number = 10
+): Promise<{ items: string[]; total: number }> {
   const client = await pool.connect();
   try {
-    const query = "SELECT value FROM allowed_slugs";
-    const result = await client.query(query);
-    return result.rows.map((row) => row.value);
+    const offset = (page - 1) * limit;
+    const countQuery = "SELECT COUNT(*) FROM allowed_slugs";
+    const itemsQuery =
+      "SELECT value FROM allowed_slugs ORDER BY value LIMIT $1 OFFSET $2";
+
+    const [countResult, itemsResult] = await Promise.all([
+      client.query(countQuery),
+      client.query(itemsQuery, [limit, offset]),
+    ]);
+
+    return {
+      items: itemsResult.rows.map((row) => row.value),
+      total: parseInt(countResult.rows[0].count),
+    };
   } finally {
     client.release();
   }
@@ -275,16 +362,50 @@ export async function addMessage(name: string, slug: string, content: string) {
   }
 }
 
-export async function getMessages(limit = 100, offset = 0): Promise<Message[]> {
+export async function getMessages(
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<{ items: Message[]; total: number }> {
   const client = await pool.connect();
   try {
-    const query = `
-      SELECT * FROM messages
+    const offset = (page - 1) * limit;
+    let whereClause = "";
+    let params: any[] = [limit, offset];
+
+    if (search) {
+      whereClause = `
+        WHERE 
+          LOWER(name) LIKE LOWER($3) OR 
+          LOWER(slug) LIKE LOWER($3) OR 
+          LOWER(content) LIKE LOWER($3)
+      `;
+      params.push(`%${search}%`);
+    }
+
+    const countQuery = `
+      SELECT COUNT(*) 
+      FROM messages
+      ${whereClause}
+    `;
+
+    const itemsQuery = `
+      SELECT * 
+      FROM messages
+      ${whereClause}
       ORDER BY created_at DESC
       LIMIT $1 OFFSET $2
     `;
-    const result = await client.query(query, [limit, offset]);
-    return result.rows;
+
+    const [countResult, itemsResult] = await Promise.all([
+      client.query(countQuery, search ? [params[2]] : []),
+      client.query(itemsQuery, params),
+    ]);
+
+    return {
+      items: itemsResult.rows,
+      total: parseInt(countResult.rows[0].count),
+    };
   } finally {
     client.release();
   }

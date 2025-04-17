@@ -24,18 +24,64 @@ export const metadata: Metadata = {
   description: "Manage blocked and allowed lists",
 };
 
-export default async function ListsPage() {
-  // Get all lists
-  const blockedNames = await getBlockedNamesAction();
-  const blockedSlugs = await getBlockedSlugsAction();
-  const allowedNames = await getAllowedNamesAction();
-  const allowedSlugs = await getAllowedSlugsAction();
+interface PageProps {
+  searchParams: {
+    blockedNamesPage?: string;
+    blockedSlugsPage?: string;
+    allowedNamesPage?: string;
+    allowedSlugsPage?: string;
+    blockedNamesSearch?: string;
+    blockedSlugsSearch?: string;
+    allowedNamesSearch?: string;
+    allowedSlugsSearch?: string;
+  };
+}
+
+const ITEMS_PER_PAGE = 10;
+
+export default async function ListsPage({ searchParams }: PageProps) {
+  // Get current page numbers from URL params
+  const blockedNamesPage = Number(searchParams.blockedNamesPage) || 1;
+  const blockedSlugsPage = Number(searchParams.blockedSlugsPage) || 1;
+  const allowedNamesPage = Number(searchParams.allowedNamesPage) || 1;
+  const allowedSlugsPage = Number(searchParams.allowedSlugsPage) || 1;
+
+  // Get search terms from URL params
+  const blockedNamesSearch = searchParams.blockedNamesSearch;
+  const blockedSlugsSearch = searchParams.blockedSlugsSearch;
+  const allowedNamesSearch = searchParams.allowedNamesSearch;
+  const allowedSlugsSearch = searchParams.allowedSlugsSearch;
+
+  // Get paginated and filtered lists
+  const [blockedNames, blockedSlugs, allowedNames, allowedSlugs] =
+    await Promise.all([
+      getBlockedNamesAction(
+        blockedNamesPage,
+        ITEMS_PER_PAGE,
+        blockedNamesSearch
+      ),
+      getBlockedSlugsAction(
+        blockedSlugsPage,
+        ITEMS_PER_PAGE,
+        blockedSlugsSearch
+      ),
+      getAllowedNamesAction(
+        allowedNamesPage,
+        ITEMS_PER_PAGE,
+        allowedNamesSearch
+      ),
+      getAllowedSlugsAction(
+        allowedSlugsPage,
+        ITEMS_PER_PAGE,
+        allowedSlugsSearch
+      ),
+    ]);
 
   const totalItems =
-    blockedNames.length +
-    blockedSlugs.length +
-    allowedNames.length +
-    allowedSlugs.length;
+    blockedNames.total +
+    blockedSlugs.total +
+    allowedNames.total +
+    allowedSlugs.total;
 
   return (
     <div className='container mx-auto py-6 space-y-6'>
@@ -84,10 +130,10 @@ export default async function ListsPage() {
             </CardDescription>
           </div>
           <BatchExportButton
-            blockedNames={blockedNames}
-            blockedSlugs={blockedSlugs}
-            allowedNames={allowedNames}
-            allowedSlugs={allowedSlugs}
+            blockedNames={blockedNames.items}
+            blockedSlugs={blockedSlugs.items}
+            allowedNames={allowedNames.items}
+            allowedSlugs={allowedSlugs.items}
           />
         </CardHeader>
         <CardContent>
@@ -101,37 +147,49 @@ export default async function ListsPage() {
 
             <TabsContent value='blocked-names'>
               <ListTable
-                items={blockedNames}
+                items={blockedNames.items}
+                totalItems={blockedNames.total}
+                currentPage={blockedNamesPage}
                 emptyMessage='No blocked names'
                 removeRoute='/api/lists/blocked-names/remove'
                 listType='blocked-names'
+                baseQueryParam='blockedNamesPage'
               />
             </TabsContent>
 
             <TabsContent value='blocked-slugs'>
               <ListTable
-                items={blockedSlugs}
+                items={blockedSlugs.items}
+                totalItems={blockedSlugs.total}
+                currentPage={blockedSlugsPage}
                 emptyMessage='No blocked slugs'
                 removeRoute='/api/lists/blocked-slugs/remove'
                 listType='blocked-slugs'
+                baseQueryParam='blockedSlugsPage'
               />
             </TabsContent>
 
             <TabsContent value='allowed-names'>
               <ListTable
-                items={allowedNames}
+                items={allowedNames.items}
+                totalItems={allowedNames.total}
+                currentPage={allowedNamesPage}
                 emptyMessage='No allowed names'
                 removeRoute='/api/lists/allowed-names/remove'
                 listType='allowed-names'
+                baseQueryParam='allowedNamesPage'
               />
             </TabsContent>
 
             <TabsContent value='allowed-slugs'>
               <ListTable
-                items={allowedSlugs}
+                items={allowedSlugs.items}
+                totalItems={allowedSlugs.total}
+                currentPage={allowedSlugsPage}
                 emptyMessage='No allowed slugs'
                 removeRoute='/api/lists/allowed-slugs/remove'
                 listType='allowed-slugs'
+                baseQueryParam='allowedSlugsPage'
               />
             </TabsContent>
           </Tabs>
@@ -141,12 +199,12 @@ export default async function ListsPage() {
       <div className='text-sm text-muted-foreground'>
         <p>Total items: {totalItems}</p>
         <p>
-          Blocked names: {blockedNames.length}, Blocked slugs:{" "}
-          {blockedSlugs.length}
+          Blocked names: {blockedNames.total}, Blocked slugs:{" "}
+          {blockedSlugs.total}
         </p>
         <p>
-          Allowed names: {allowedNames.length}, Allowed slugs:{" "}
-          {allowedSlugs.length}
+          Allowed names: {allowedNames.total}, Allowed slugs:{" "}
+          {allowedSlugs.total}
         </p>
       </div>
     </div>
