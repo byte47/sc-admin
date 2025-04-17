@@ -77,11 +77,11 @@ export async function GET() {
       lastModified,
       backups,
       totalBackups,
-      totalEntries: historyEntries.length,
-      allowedNamesCount: allowedNames.length,
-      allowedSlugsCount: allowedSlugs.length,
-      blockedNamesCount: blockedNames.length,
-      blockedSlugsCount: blockedSlugs.length,
+      totalEntries: historyEntries.items.length,
+      allowedNamesCount: allowedNames.items.length,
+      allowedSlugsCount: allowedSlugs.items.length,
+      blockedNamesCount: blockedNames.items.length,
+      blockedSlugsCount: blockedSlugs.items.length,
     });
   } catch (error) {
     console.error("Error getting database info:", error);

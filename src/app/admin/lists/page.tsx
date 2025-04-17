@@ -25,56 +25,27 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  searchParams: {
-    blockedNamesPage?: string;
-    blockedSlugsPage?: string;
-    allowedNamesPage?: string;
-    allowedSlugsPage?: string;
-    blockedNamesSearch?: string;
-    blockedSlugsSearch?: string;
-    allowedNamesSearch?: string;
-    allowedSlugsSearch?: string;
-  };
+  searchParams?: Promise<any>;
+  params?: Promise<any>;
 }
 
 const ITEMS_PER_PAGE = 10;
 
 export default async function ListsPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   // Get current page numbers from URL params
-  const blockedNamesPage = Number(searchParams.blockedNamesPage) || 1;
-  const blockedSlugsPage = Number(searchParams.blockedSlugsPage) || 1;
-  const allowedNamesPage = Number(searchParams.allowedNamesPage) || 1;
-  const allowedSlugsPage = Number(searchParams.allowedSlugsPage) || 1;
-
-  // Get search terms from URL params
-  const blockedNamesSearch = searchParams.blockedNamesSearch;
-  const blockedSlugsSearch = searchParams.blockedSlugsSearch;
-  const allowedNamesSearch = searchParams.allowedNamesSearch;
-  const allowedSlugsSearch = searchParams.allowedSlugsSearch;
+  const blockedNamesPage = Number(resolvedSearchParams.blockedNamesPage) || 1;
+  const blockedSlugsPage = Number(resolvedSearchParams.blockedSlugsPage) || 1;
+  const allowedNamesPage = Number(resolvedSearchParams.allowedNamesPage) || 1;
+  const allowedSlugsPage = Number(resolvedSearchParams.allowedSlugsPage) || 1;
 
   // Get paginated and filtered lists
   const [blockedNames, blockedSlugs, allowedNames, allowedSlugs] =
     await Promise.all([
-      getBlockedNamesAction(
-        blockedNamesPage,
-        ITEMS_PER_PAGE,
-        blockedNamesSearch
-      ),
-      getBlockedSlugsAction(
-        blockedSlugsPage,
-        ITEMS_PER_PAGE,
-        blockedSlugsSearch
-      ),
-      getAllowedNamesAction(
-        allowedNamesPage,
-        ITEMS_PER_PAGE,
-        allowedNamesSearch
-      ),
-      getAllowedSlugsAction(
-        allowedSlugsPage,
-        ITEMS_PER_PAGE,
-        allowedSlugsSearch
-      ),
+      getBlockedNamesAction(blockedNamesPage, ITEMS_PER_PAGE),
+      getBlockedSlugsAction(blockedSlugsPage, ITEMS_PER_PAGE),
+      getAllowedNamesAction(allowedNamesPage, ITEMS_PER_PAGE),
+      getAllowedSlugsAction(allowedSlugsPage, ITEMS_PER_PAGE),
     ]);
 
   const totalItems =

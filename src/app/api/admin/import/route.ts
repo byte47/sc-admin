@@ -135,16 +135,16 @@ export async function POST(request: NextRequest) {
       try {
         if (type === "blocked-names") {
           const list = await getBlockedNamesAction();
-          existingItems = list.map((item) => item.value.toLowerCase());
+          existingItems = list.items.map((item) => item.value.toLowerCase());
         } else if (type === "blocked-slugs") {
           const list = await getBlockedSlugsAction();
-          existingItems = list.map((item) => item.value.toLowerCase());
+          existingItems = list.items.map((item) => item.value.toLowerCase());
         } else if (type === "allowed-names") {
           const list = await getAllowedNamesAction();
-          existingItems = list.map((item) => item.value.toLowerCase());
+          existingItems = list.items.map((item) => item.value.toLowerCase());
         } else if (type === "allowed-slugs") {
           const list = await getAllowedSlugsAction();
-          existingItems = list.map((item) => item.value.toLowerCase());
+          existingItems = list.items.map((item) => item.value.toLowerCase());
         }
       } catch (error) {
         console.error(

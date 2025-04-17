@@ -28,15 +28,14 @@ export const metadata: Metadata = {
 const ITEMS_PER_PAGE = 10;
 
 interface PageProps {
-  searchParams: {
-    page?: string;
-    search?: string;
-  };
+  searchParams?: Promise<any>;
+  params?: Promise<any>;
 }
 
 export default async function HistoryPage({ searchParams }: PageProps) {
-  const currentPage = Number(searchParams.page) || 1;
-  const searchTerm = searchParams.search || "";
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const currentPage = Number(resolvedSearchParams.page) || 1;
+  const searchTerm = resolvedSearchParams.search || "";
 
   const { items: historyItems, total } = await getAccessHistoryAction(
     currentPage,

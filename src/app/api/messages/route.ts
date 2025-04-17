@@ -20,10 +20,19 @@ export async function POST(request: NextRequest) {
     // Validate the request body
     const result = messageSchema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json(
-        { error: "Invalid request data", details: result.error.format() },
-        { status: 400 }
-      );
+      console.log(`400: Invalid request data: ${result.error.format()}`);
+
+      return new NextResponse("true", {
+        status: 200,
+        headers: {
+          "Content-Type": "text/plain",
+        },
+      });
+
+      // return NextResponse.json(
+      //   { error: "Invalid request data", details: result.error.format() },
+      //   { status: 400 }
+      // );
     }
 
     // Get the name and messages from the validated data
@@ -39,12 +48,18 @@ export async function POST(request: NextRequest) {
       );
 
       if (hasBlockedOrFlagged) {
-        return new Response("block", {
+        return new NextResponse("false", {
           status: 200,
+          headers: {
+            "Content-Type": "text/plain",
+          },
         });
       } else {
-        return new Response("allow", {
+        return new NextResponse("true", {
           status: 200,
+          headers: {
+            "Content-Type": "text/plain",
+          },
         });
       }
       // Return success
@@ -61,14 +76,23 @@ export async function POST(request: NextRequest) {
       const errorMessage =
         dbError instanceof Error ? dbError.message : String(dbError);
       if (errorMessage.includes("database connection is not open")) {
-        return NextResponse.json(
-          {
-            error: "Database connection error",
-            message:
-              "The database is currently unavailable. Please try again later or contact the administrator.",
+        console.error(`503: Database connection error: ${errorMessage}`);
+
+        return new NextResponse("true", {
+          status: 200,
+          headers: {
+            "Content-Type": "text/plain",
           },
-          { status: 503 } // Service Unavailable
-        );
+        });
+
+        // return NextResponse.json(
+        //   {
+        //     error: "Database connection error",
+        //     message:
+        //       "The database is currently unavailable. Please try again later or contact the administrator.",
+        //   },
+        //   { status: 503 } // Service Unavailable
+        // );
       }
 
       // Re-throw for the outer catch block to handle
@@ -76,9 +100,17 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error("Error processing message request:", error);
-    return NextResponse.json(
-      { error: "An unexpected error occurred" },
-      { status: 500 }
-    );
+
+    return new NextResponse("true", {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain",
+      },
+    });
+
+    // return NextResponse.json(
+    //   { error: "An unexpected error occurred" },
+    //   { status: 500 }
+    // );
   }
 }

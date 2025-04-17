@@ -30,15 +30,14 @@ import { BLACKLISTED_NAME_WORDS } from "@/lib/utils";
 const ITEMS_PER_PAGE = 10;
 
 interface MessagesTableProps {
-  searchParams: {
-    page?: string;
-    search?: string;
-  };
+  searchParams?: Promise<any>;
+  params?: Promise<any>;
 }
 
 async function MessagesTable({ searchParams }: MessagesTableProps) {
-  const currentPage = Number(searchParams.page) || 1;
-  const searchTerm = searchParams.search || "";
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const currentPage = Number(resolvedSearchParams.page) || 1;
+  const searchTerm = resolvedSearchParams.search || "";
 
   const { items: messages, total } = await getMessagesAction(
     currentPage,
@@ -252,7 +251,8 @@ async function MessagesTable({ searchParams }: MessagesTableProps) {
 export default function MessagesPage({
   searchParams,
 }: {
-  searchParams: { page?: string; search?: string };
+  searchParams?: Promise<any>;
+  params?: Promise<any>;
 }) {
   return (
     <div className='space-y-6'>

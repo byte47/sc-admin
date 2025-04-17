@@ -33,16 +33,18 @@ export default async function AdminDashboard() {
   const allowedSlugs = await getAllowedSlugsAction();
 
   // Calculate total counts for blocked and allowed items
-  const totalBlockedItems = blockedNames.length + blockedSlugs.length;
-  const totalAllowedItems = allowedNames.length + allowedSlugs.length;
+  const totalBlockedItems =
+    blockedNames.items.length + blockedSlugs.items.length;
+  const totalAllowedItems =
+    allowedNames.items.length + allowedSlugs.items.length;
 
   // Calculate summary stats
-  const accessCount = recentHistory.length;
-  const allowedCount = recentHistory.filter(
-    (item) => item.result === "allow"
+  const accessCount = recentHistory.items.length;
+  const allowedCount = recentHistory.items.filter(
+    (item: any) => item.result === "allow"
   ).length;
-  const blockedCount = recentHistory.filter(
-    (item) => item.result === "block"
+  const blockedCount = recentHistory.items.filter(
+    (item: any) => item.result === "block"
   ).length;
 
   return (
@@ -79,8 +81,8 @@ export default async function AdminDashboard() {
           <CardContent className='space-y-2'>
             <div className='text-3xl font-bold'>{totalBlockedItems}</div>
             <div className='text-sm text-muted-foreground flex justify-between'>
-              <span>Names: {blockedNames.length}</span>
-              <span>Slugs: {blockedSlugs.length}</span>
+              <span>Names: {blockedNames.items.length}</span>
+              <span>Slugs: {blockedSlugs.items.length}</span>
             </div>
           </CardContent>
           <CardFooter>
@@ -101,8 +103,8 @@ export default async function AdminDashboard() {
           <CardContent className='space-y-2'>
             <div className='text-3xl font-bold'>{totalAllowedItems}</div>
             <div className='text-sm text-muted-foreground flex justify-between'>
-              <span>Names: {allowedNames.length}</span>
-              <span>Slugs: {allowedSlugs.length}</span>
+              <span>Names: {allowedNames.items.length}</span>
+              <span>Slugs: {allowedSlugs.items.length}</span>
             </div>
           </CardContent>
           <CardFooter>
