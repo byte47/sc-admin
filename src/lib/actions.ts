@@ -76,9 +76,10 @@ export async function removeFromBlockedNamesAction(value: string) {
 
 export async function getBlockedNamesAction(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  search?: string
 ): Promise<{ items: ListItem[]; total: number }> {
-  const result = await getBlockedNames(page, limit);
+  const result = await getBlockedNames(page, limit, search);
   return {
     items: result.items.map((value, index) => ({
       id: (page - 1) * limit + index + 1,
@@ -110,9 +111,10 @@ export async function removeFromBlockedSlugsAction(value: string) {
 
 export async function getBlockedSlugsAction(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  search?: string
 ): Promise<{ items: ListItem[]; total: number }> {
-  const result = await getBlockedSlugs(page, limit);
+  const result = await getBlockedSlugs(page, limit, search);
   return {
     items: result.items.map((value, index) => ({
       id: (page - 1) * limit + index + 1,
@@ -144,9 +146,10 @@ export async function removeFromAllowedNamesAction(value: string) {
 
 export async function getAllowedNamesAction(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  search?: string
 ): Promise<{ items: ListItem[]; total: number }> {
-  const result = await getAllowedNames(page, limit);
+  const result = await getAllowedNames(page, limit, search);
   return {
     items: result.items.map((value, index) => ({
       id: (page - 1) * limit + index + 1,
@@ -178,9 +181,10 @@ export async function removeFromAllowedSlugsAction(value: string) {
 
 export async function getAllowedSlugsAction(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  search?: string
 ): Promise<{ items: ListItem[]; total: number }> {
-  const result = await getAllowedSlugs(page, limit);
+  const result = await getAllowedSlugs(page, limit, search);
   return {
     items: result.items.map((value, index) => ({
       id: (page - 1) * limit + index + 1,

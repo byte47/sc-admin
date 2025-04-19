@@ -107,18 +107,34 @@ export async function addToBlockedNames(value: string) {
 
 export async function getBlockedNames(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  search?: string
 ): Promise<{ items: string[]; total: number }> {
   const client = await pool.connect();
   try {
     const offset = (page - 1) * limit;
-    const countQuery = "SELECT COUNT(*) FROM blocked_names";
-    const itemsQuery =
-      "SELECT value FROM blocked_names ORDER BY value LIMIT $1 OFFSET $2";
+    const searchCondition = search ? `WHERE value ILIKE $3` : "";
+    const searchParam = search ? `%${search}%` : null;
+
+    const countQuery = `
+      SELECT COUNT(*) FROM blocked_names
+      ${searchCondition}
+    `;
+    const itemsQuery = `
+      SELECT value FROM blocked_names
+      ${searchCondition}
+      ORDER BY value LIMIT $1 OFFSET $2
+    `;
 
     const [countResult, itemsResult] = await Promise.all([
-      client.query(countQuery),
-      client.query(itemsQuery, [limit, offset]),
+      client.query(
+        search ? countQuery : countQuery,
+        search ? [searchParam] : []
+      ),
+      client.query(
+        search ? itemsQuery : itemsQuery,
+        search ? [limit, offset, searchParam] : [limit, offset]
+      ),
     ]);
 
     return {
@@ -159,18 +175,34 @@ export async function addToBlockedSlugs(value: string) {
 
 export async function getBlockedSlugs(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  search?: string
 ): Promise<{ items: string[]; total: number }> {
   const client = await pool.connect();
   try {
     const offset = (page - 1) * limit;
-    const countQuery = "SELECT COUNT(*) FROM blocked_slugs";
-    const itemsQuery =
-      "SELECT value FROM blocked_slugs ORDER BY value LIMIT $1 OFFSET $2";
+    const searchCondition = search ? `WHERE value ILIKE $3` : "";
+    const searchParam = search ? `%${search}%` : null;
+
+    const countQuery = `
+      SELECT COUNT(*) FROM blocked_slugs
+      ${searchCondition}
+    `;
+    const itemsQuery = `
+      SELECT value FROM blocked_slugs
+      ${searchCondition}
+      ORDER BY value LIMIT $1 OFFSET $2
+    `;
 
     const [countResult, itemsResult] = await Promise.all([
-      client.query(countQuery),
-      client.query(itemsQuery, [limit, offset]),
+      client.query(
+        search ? countQuery : countQuery,
+        search ? [searchParam] : []
+      ),
+      client.query(
+        search ? itemsQuery : itemsQuery,
+        search ? [limit, offset, searchParam] : [limit, offset]
+      ),
     ]);
 
     return {
@@ -211,18 +243,34 @@ export async function addToAllowedNames(value: string) {
 
 export async function getAllowedNames(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  search?: string
 ): Promise<{ items: string[]; total: number }> {
   const client = await pool.connect();
   try {
     const offset = (page - 1) * limit;
-    const countQuery = "SELECT COUNT(*) FROM allowed_names";
-    const itemsQuery =
-      "SELECT value FROM allowed_names ORDER BY value LIMIT $1 OFFSET $2";
+    const searchCondition = search ? `WHERE value ILIKE $3` : "";
+    const searchParam = search ? `%${search}%` : null;
+
+    const countQuery = `
+      SELECT COUNT(*) FROM allowed_names
+      ${searchCondition}
+    `;
+    const itemsQuery = `
+      SELECT value FROM allowed_names
+      ${searchCondition}
+      ORDER BY value LIMIT $1 OFFSET $2
+    `;
 
     const [countResult, itemsResult] = await Promise.all([
-      client.query(countQuery),
-      client.query(itemsQuery, [limit, offset]),
+      client.query(
+        search ? countQuery : countQuery,
+        search ? [searchParam] : []
+      ),
+      client.query(
+        search ? itemsQuery : itemsQuery,
+        search ? [limit, offset, searchParam] : [limit, offset]
+      ),
     ]);
 
     return {
@@ -263,18 +311,34 @@ export async function addToAllowedSlugs(value: string) {
 
 export async function getAllowedSlugs(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  search?: string
 ): Promise<{ items: string[]; total: number }> {
   const client = await pool.connect();
   try {
     const offset = (page - 1) * limit;
-    const countQuery = "SELECT COUNT(*) FROM allowed_slugs";
-    const itemsQuery =
-      "SELECT value FROM allowed_slugs ORDER BY value LIMIT $1 OFFSET $2";
+    const searchCondition = search ? `WHERE value ILIKE $3` : "";
+    const searchParam = search ? `%${search}%` : null;
+
+    const countQuery = `
+      SELECT COUNT(*) FROM allowed_slugs
+      ${searchCondition}
+    `;
+    const itemsQuery = `
+      SELECT value FROM allowed_slugs
+      ${searchCondition}
+      ORDER BY value LIMIT $1 OFFSET $2
+    `;
 
     const [countResult, itemsResult] = await Promise.all([
-      client.query(countQuery),
-      client.query(itemsQuery, [limit, offset]),
+      client.query(
+        search ? countQuery : countQuery,
+        search ? [searchParam] : []
+      ),
+      client.query(
+        search ? itemsQuery : itemsQuery,
+        search ? [limit, offset, searchParam] : [limit, offset]
+      ),
     ]);
 
     return {

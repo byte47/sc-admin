@@ -33,19 +33,40 @@ const ITEMS_PER_PAGE = 10;
 
 export default async function ListsPage({ searchParams }: PageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  // Get current page numbers from URL params
+  // Get current page numbers and search terms from URL params
   const blockedNamesPage = Number(resolvedSearchParams.blockedNamesPage) || 1;
   const blockedSlugsPage = Number(resolvedSearchParams.blockedSlugsPage) || 1;
   const allowedNamesPage = Number(resolvedSearchParams.allowedNamesPage) || 1;
   const allowedSlugsPage = Number(resolvedSearchParams.allowedSlugsPage) || 1;
 
+  const blockedNamesSearch = resolvedSearchParams.blockedNamesSearch || "";
+  const blockedSlugsSearch = resolvedSearchParams.blockedSlugsSearch || "";
+  const allowedNamesSearch = resolvedSearchParams.allowedNamesSearch || "";
+  const allowedSlugsSearch = resolvedSearchParams.allowedSlugsSearch || "";
+
   // Get paginated and filtered lists
   const [blockedNames, blockedSlugs, allowedNames, allowedSlugs] =
     await Promise.all([
-      getBlockedNamesAction(blockedNamesPage, ITEMS_PER_PAGE),
-      getBlockedSlugsAction(blockedSlugsPage, ITEMS_PER_PAGE),
-      getAllowedNamesAction(allowedNamesPage, ITEMS_PER_PAGE),
-      getAllowedSlugsAction(allowedSlugsPage, ITEMS_PER_PAGE),
+      getBlockedNamesAction(
+        blockedNamesPage,
+        ITEMS_PER_PAGE,
+        blockedNamesSearch
+      ),
+      getBlockedSlugsAction(
+        blockedSlugsPage,
+        ITEMS_PER_PAGE,
+        blockedSlugsSearch
+      ),
+      getAllowedNamesAction(
+        allowedNamesPage,
+        ITEMS_PER_PAGE,
+        allowedNamesSearch
+      ),
+      getAllowedSlugsAction(
+        allowedSlugsPage,
+        ITEMS_PER_PAGE,
+        allowedSlugsSearch
+      ),
     ]);
 
   const totalItems =
