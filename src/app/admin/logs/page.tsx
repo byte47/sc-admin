@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -20,13 +20,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getAccessLogsAction, getMessagesLogsAction } from "@/lib/actions";
-import { LogEntry } from "@/lib/logger";
+import { LogEntry, getLastRequestsLogs } from "@/lib/logger";
 
 export default function LogsPage() {
   const [accessLogs, setAccessLogs] = useState<LogEntry[]>([]);
   const [messagesLogs, setMessagesLogs] = useState<LogEntry[]>([]);
   const [logCount, setLogCount] = useState<number>(50);
   const [loading, setLoading] = useState<boolean>(false);
+  const [requestLogs, setRequestLogs] = useState<LogEntry[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState<boolean>(true);
 
   const fetchLogs = async (type: "access" | "messages") => {
     setLoading(true);
@@ -49,6 +51,14 @@ export default function LogsPage() {
     const value = parseInt(e.target.value);
     setLogCount(isNaN(value) ? 50 : Math.max(1, value));
   };
+
+  useEffect(() => {
+    setLoadingRequests(true);
+    fetch("/api/admin/requests-logs")
+      .then((res) => res.json())
+      .then((data) => setRequestLogs(data))
+      .finally(() => setLoadingRequests(false));
+  }, []);
 
   return (
     <div className='space-y-6'>
@@ -205,6 +215,38 @@ export default function LogsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <section>
+        <h2>Last 5 API Requests</h2>
+        {loadingRequests ? (
+          <p>Loading...</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Method</th>
+                <th>URL</th>
+                <th>Body</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requestLogs.map((log, idx) => (
+                <tr key={idx}>
+                  <td>{log.timestamp}</td>
+                  <td>{log.method}</td>
+                  <td>{log.url}</td>
+                  <td>
+                    <pre style={{ maxWidth: 300, overflowX: "auto" }}>
+                      {JSON.stringify(log.body, null, 2)}
+                    </pre>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
     </div>
   );
 }

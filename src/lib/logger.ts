@@ -135,3 +135,11 @@ export function getLastAccessLogs(count: number = 100): LogEntry[] {
 export function getLastMessagesLogs(count: number = 100): LogEntry[] {
   return getLastLogs(MESSAGES_LOG_FILE, count);
 }
+
+/**
+ * Get the last n requests log entries
+ */
+export function getLastRequestsLogs(count: number = 100): LogEntry[] {
+  const REQUESTS_LOG_FILE = path.join(process.cwd(), "logs", "requests.log");
+  return getLastLogs(REQUESTS_LOG_FILE, count);
+}
