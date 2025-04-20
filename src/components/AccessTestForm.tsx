@@ -118,7 +118,7 @@ export default function AccessTestForm() {
             <div className='flex items-center justify-between'>
               <div>
                 <div className='font-semibold mb-1'>
-                  Result: {result.result.toUpperCase()}
+                  Result: {result.result?.toUpperCase()}
                 </div>
                 {result.reason && (
                   <div className='text-sm text-muted-foreground'>

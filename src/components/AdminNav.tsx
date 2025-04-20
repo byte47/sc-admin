@@ -9,10 +9,13 @@ import {
   History,
   MessagesSquare,
   FileText,
+  BarChart,
+  Home,
 } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/stats", label: "Stats", icon: BarChart },
   { href: "/admin/lists", label: "Manage Lists", icon: List },
   { href: "/admin/verification", label: "Verification", icon: ClipboardCheck },
   { href: "/admin/messages", label: "Messages", icon: MessagesSquare },
@@ -44,6 +47,15 @@ export default function AdminNav() {
           </Link>
         );
       })}
+      <div className='mt-6 pt-4 border-t'>
+        <Link
+          href='/'
+          className='flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:bg-primary/5 hover:text-primary'
+        >
+          <Home className='mr-2 h-4 w-4' />
+          Main Site
+        </Link>
+      </div>
     </nav>
   );
 }
