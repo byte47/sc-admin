@@ -22,10 +22,12 @@ import {
 
 interface VerificationActionsProps {
   item: QueueItem;
+  onRemove?: () => void;
 }
 
 export default function VerificationActions({
   item,
+  onRemove,
 }: VerificationActionsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
@@ -40,6 +42,7 @@ export default function VerificationActions({
     setLoading(actionIdentifier);
 
     try {
+      if (onRemove) onRemove();
       const value = target === "name" ? item.name : customSlug;
 
       // Add to appropriate list or just mark as reviewed for discard

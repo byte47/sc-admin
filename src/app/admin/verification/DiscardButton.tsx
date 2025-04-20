@@ -11,11 +11,16 @@ import { updateQueueItemStatusAction } from "@/lib/actions";
 
 interface DiscardButtonProps {
   itemId: number;
+  onRemove?: () => void;
 }
 
-export default function DiscardButton({ itemId }: DiscardButtonProps) {
+export default function DiscardButton({
+  itemId,
+  onRemove,
+}: DiscardButtonProps) {
   async function handleDiscard() {
     try {
+      if (onRemove) onRemove();
       await updateQueueItemStatusAction(itemId, "reviewed");
     } catch (error) {
       console.error("Error discarding item:", error);

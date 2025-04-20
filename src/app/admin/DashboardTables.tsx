@@ -21,17 +21,32 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import VerificationActions from "./verification/VerificationActions";
 import DiscardButton from "./verification/DiscardButton";
+import { useState, useEffect } from "react";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function DashboardTables() {
   // Poll every 5 seconds
-  const { data: verifications } = useSWR("/api/verification-queue", fetcher, {
-    refreshInterval: 5000,
-  });
+  const { data: swrVerifications } = useSWR(
+    "/api/verification-queue",
+    fetcher,
+    {
+      refreshInterval: 5000,
+    }
+  );
   const { data: history } = useSWR("/api/access-history?limit=30", fetcher, {
     refreshInterval: 5000,
   });
+
+  const [verifications, setVerifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (swrVerifications) setVerifications(swrVerifications);
+  }, [swrVerifications]);
+
+  function handleRemove(id: number) {
+    setVerifications((items) => items.filter((item) => item.id !== id));
+  }
 
   return (
     <div className='space-y-8'>
@@ -58,7 +73,10 @@ export default function DashboardTables() {
                 {verifications.map((item: any) => (
                   <TableRow key={item.id} className='border-b hover:bg-gray-50'>
                     <TableCell className='py-2'>
-                      <VerificationActions item={item} />
+                      <VerificationActions
+                        item={item}
+                        onRemove={() => handleRemove(item.id)}
+                      />
                     </TableCell>
                     <TableCell className='py-2 text-sm text-muted-foreground'>
                       <div className='flex items-center justify-between'>
@@ -67,7 +85,10 @@ export default function DashboardTables() {
                             timeZone: "Asia/Kolkata",
                           })}
                         </span>
-                        <DiscardButton itemId={item.id} />
+                        <DiscardButton
+                          itemId={item.id}
+                          onRemove={() => handleRemove(item.id)}
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

@@ -33,10 +33,8 @@ export default async function StatsPage() {
   const allowedSlugs = await getAllowedSlugsAction();
 
   // Calculate total counts for blocked and allowed items
-  const totalBlockedItems =
-    blockedNames.items.length + blockedSlugs.items.length;
-  const totalAllowedItems =
-    allowedNames.items.length + allowedSlugs.items.length;
+  const totalBlockedItems = blockedNames.total + blockedSlugs.total;
+  const totalAllowedItems = allowedNames.total + allowedSlugs.total;
 
   // Calculate summary stats
   const accessCount = recentHistory.items.length;
@@ -81,8 +79,8 @@ export default async function StatsPage() {
           <CardContent className='space-y-2'>
             <div className='text-3xl font-bold'>{totalBlockedItems}</div>
             <div className='text-sm text-muted-foreground flex justify-between'>
-              <span>Names: {blockedNames.items.length}</span>
-              <span>Slugs: {blockedSlugs.items.length}</span>
+              <span>Names: {blockedNames.total}</span>
+              <span>Slugs: {blockedSlugs.total}</span>
             </div>
           </CardContent>
           <CardFooter>
@@ -103,8 +101,8 @@ export default async function StatsPage() {
           <CardContent className='space-y-2'>
             <div className='text-3xl font-bold'>{totalAllowedItems}</div>
             <div className='text-sm text-muted-foreground flex justify-between'>
-              <span>Names: {allowedNames.items.length}</span>
-              <span>Slugs: {allowedSlugs.items.length}</span>
+              <span>Names: {allowedNames.total}</span>
+              <span>Slugs: {allowedSlugs.total}</span>
             </div>
           </CardContent>
           <CardFooter>

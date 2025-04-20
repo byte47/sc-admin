@@ -1,4 +1,6 @@
-import { Metadata } from "next";
+"use client";
+
+import { useEffect, useState } from "react";
 import { getVerificationQueueAction } from "@/lib/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,13 +14,20 @@ import {
 import VerificationActions from "./VerificationActions";
 import DiscardButton from "./DiscardButton";
 
-export const metadata: Metadata = {
-  title: "Verification Queue - Access Monitor",
-  description: "Review pending verification requests",
-};
+export default function VerificationQueuePage() {
+  const [pendingItems, setPendingItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function VerificationQueuePage() {
-  const pendingItems = await getVerificationQueueAction("pending");
+  useEffect(() => {
+    getVerificationQueueAction("pending").then((items) => {
+      setPendingItems(items);
+      setLoading(false);
+    });
+  }, []);
+
+  function handleRemove(id: number) {
+    setPendingItems((items) => items.filter((item) => item.id !== id));
+  }
 
   return (
     <div className='space-y-4'>
@@ -31,7 +40,9 @@ export default async function VerificationQueuePage() {
           <CardTitle>Pending Verification ({pendingItems.length})</CardTitle>
         </CardHeader>
         <CardContent className='p-0'>
-          {pendingItems.length === 0 ? (
+          {loading ? (
+            <p className='text-muted-foreground text-center py-4'>Loading...</p>
+          ) : pendingItems.length === 0 ? (
             <p className='text-muted-foreground text-center py-4'>
               No pending items to verify.
             </p>
@@ -47,7 +58,10 @@ export default async function VerificationQueuePage() {
                 {pendingItems.map((item) => (
                   <TableRow key={item.id} className='border-b hover:bg-gray-50'>
                     <TableCell className='py-2'>
-                      <VerificationActions item={item} />
+                      <VerificationActions
+                        item={item}
+                        onRemove={() => handleRemove(item.id)}
+                      />
                     </TableCell>
                     <TableCell className='py-2 text-sm text-muted-foreground'>
                       <div className='flex items-center justify-between'>
@@ -56,7 +70,10 @@ export default async function VerificationQueuePage() {
                             timeZone: "Asia/Kolkata",
                           })}
                         </span>
-                        <DiscardButton itemId={item.id} />
+                        <DiscardButton
+                          itemId={item.id}
+                          onRemove={() => handleRemove(item.id)}
+                        />
                       </div>
                     </TableCell>
                   </TableRow>
