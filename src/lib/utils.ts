@@ -13,8 +13,6 @@ export const BLACKLISTED_MESSAGE_WORDS = [
   "മാസ്റ്റർ",
   "man ",
   " man",
-  "save ",
-  " save",
   "povalle",
   "പോവല്ലേ",
   "nilkku",

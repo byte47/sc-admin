@@ -17,11 +17,24 @@ export async function POST(request: NextRequest) {
     // Extract chat messages from screencontent
     const chatMessages = extractChatData(screencontent);
 
+    // Ignore if all messages are from 'Me'
+    if (
+      chatMessages.length > 0 &&
+      chatMessages.every((msg) => msg.from === "Me")
+    ) {
+      return NextResponse.json(true);
+    }
+
     // Prepare messages for DB, flag if blacklisted
     const messagesToStore = chatMessages.map((msg) => {
-      const is_flagged = BLACKLISTED_MESSAGE_WORDS.some((word) =>
+      const is_blacklisted = BLACKLISTED_MESSAGE_WORDS.some((word) =>
         msg.text.toLowerCase().includes(word.toLowerCase())
       );
+      // Flag if message is to 'Me' and text is 'b', 'boy', or 'man' (case-insensitive)
+      const is_special_flag =
+        msg.to === "Me" &&
+        ["b", "boy", "man"].includes(msg.text.trim().toLowerCase());
+      const is_flagged = is_blacklisted || is_special_flag;
       return {
         ...msg,
         is_flagged,
@@ -29,22 +42,18 @@ export async function POST(request: NextRequest) {
       };
     });
 
+    await addBulkMessagesAction(messagesToStore);
+
+    // If any message is flagged, return false
+    if (messagesToStore.some((m) => m.is_flagged)) {
+      return NextResponse.json(false);
+    }
+
     // Store messages in DB (deduplication handled by DB unique constraint)
-    const results = await addBulkMessagesAction(messagesToStore);
 
-    const stored = results.filter(Boolean);
-    const flagged = messagesToStore.filter((m) => m.is_flagged);
-
-    return NextResponse.json({
-      stored: stored.length,
-      flagged: flagged.length,
-      flaggedMessages: flagged.map((m) => m.text),
-    });
+    return NextResponse.json(true);
   } catch (error) {
-    console.error("POST /api/chat error:", error);
-    return NextResponse.json(
-      { error: "Failed to process chat messages", details: String(error) },
-      { status: 500 }
-    );
+    console.error("POST /api/chat Failed to process chat messages:", error);
+    return NextResponse.json(true);
   }
 }
