@@ -403,3 +403,34 @@ export function extractChatData(
 
   return messages;
 }
+
+// Sends a Telegram alert message using bot token and chat ID from environment variables
+export async function sendTelegramAlert(message: string): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatIdsRaw = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatIdsRaw) {
+    console.error(
+      "Telegram bot token or chat ID not set in environment variables"
+    );
+    return;
+  }
+  const chatIds = chatIdsRaw
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  for (const chatId of chatIds) {
+    try {
+      await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+        }),
+      });
+    } catch (err) {
+      console.error(`Failed to send Telegram alert to chat ID ${chatId}:`, err);
+    }
+  }
+}

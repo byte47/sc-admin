@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractChatData, BLACKLISTED_MESSAGE_WORDS } from "@/lib/utils";
+import {
+  extractChatData,
+  BLACKLISTED_MESSAGE_WORDS,
+  sendTelegramAlert,
+} from "@/lib/utils";
 import { addBulkMessagesAction } from "@/lib/actions";
 
 export async function POST(request: NextRequest) {
@@ -26,6 +30,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare messages for DB, flag if blacklisted
+    let shouldSendTelegramAlert = false;
+    let alertMessage = "";
+    const messagesToMe = chatMessages.filter((msg) => msg.to === "Me");
+    if (messagesToMe.length > 2) {
+      shouldSendTelegramAlert = true;
+      alertMessage = `ALERT: ${messagesToMe.length} messages from '${
+        messagesToMe[0].from
+      }' - ${messagesToMe.map((m) => `'${m.text}'`).join("; ")}`;
+    }
     const messagesToStore = chatMessages.map((msg) => {
       const is_blacklisted = BLACKLISTED_MESSAGE_WORDS.some((word) =>
         msg.text.toLowerCase().includes(word.toLowerCase())
@@ -34,6 +47,15 @@ export async function POST(request: NextRequest) {
       const is_special_flag =
         msg.to === "Me" &&
         ["b", "boy", "man"].includes(msg.text.trim().toLowerCase());
+      // Telegram alert if message is to 'Me' and text is 'g' or 'girl' (case-insensitive)
+      const is_telegram_alert =
+        msg.to === "Me" &&
+        ["g", "girl"].includes(msg.text.trim().toLowerCase());
+
+      if (is_telegram_alert) {
+        shouldSendTelegramAlert = true;
+        alertMessage = `ALERT: '${msg.text}' - '${msg.from}'`;
+      }
       const is_flagged = is_blacklisted || is_special_flag;
       return {
         ...msg,
@@ -41,6 +63,10 @@ export async function POST(request: NextRequest) {
         time: msg.time ? new Date(msg.time) : null,
       };
     });
+
+    if (shouldSendTelegramAlert && alertMessage) {
+      await sendTelegramAlert(alertMessage);
+    }
 
     await addBulkMessagesAction(messagesToStore);
 
