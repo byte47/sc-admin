@@ -171,7 +171,7 @@ pnpm build
 - `/src/app/api` - API endpoints
 - `/src/components` - Reusable UI components
 - `/src/lib` - Core business logic and utilities
-- `/data` - SQLite database storage
+- `/data` - Postgres database storage
 
 ## Testing
 
@@ -184,3 +184,42 @@ npm test
 ## License
 
 MIT
+
+## Database Migrations
+
+This project uses [node-pg-migrate](https://github.com/salsita/node-pg-migrate) for managing PostgreSQL schema migrations.
+
+### Running Migrations
+
+- To apply all pending migrations:
+  ```sh
+  pnpm migrate
+  ```
+- To apply only the next migration:
+  ```sh
+  pnpm migrate:up
+  ```
+- To revert the last migration:
+  ```sh
+  pnpm migrate:down
+  ```
+
+### Creating a New Migration
+
+To create a new migration file:
+
+```sh
+npx node-pg-migrate create <migration-name> --migrations-dir migrations
+```
+
+Edit the generated file in the `migrations/` directory to define your schema changes.
+
+### Configuration
+
+- The database connection string is read from the `DB_URL` variable in your `.env.local` file.
+- All migration files are stored in the `migrations/` directory.
+
+### Notes
+
+- The old schema initialization script (`src/scripts/migrate-db.ts`) is now deprecated. Use the migration system for all schema changes.
+- For more details, see the [node-pg-migrate documentation](https://github.com/salsita/node-pg-migrate).

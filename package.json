@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest"
+    "test": "vitest",
+    "migrate": "node-pg-migrate -d $DB_URL -m migrations",
+    "migrate:up": "node-pg-migrate up -d $DB_URL -m migrations",
+    "migrate:down": "node-pg-migrate down -d $DB_URL -m migrations"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.8.0",
@@ -46,6 +49,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "node-pg-migrate": "^7.9.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.3",
     "tsx": "^4.19.3",

@@ -20,34 +20,28 @@ export default function BatchExportButton({
 }: BatchExportButtonProps) {
   const [loading, setLoading] = useState(false);
 
-  // Format items as CSV content
-  const formatAsCsv = (
-    items: Array<{ id: number; value: string }>,
-    listName: string
-  ) => {
-    // Convert items to CSV rows
-    const rows = items
-      .map((item) => `${listName},${item.id},${item.value.replace(/,/g, ";")}`)
-      .join("\n");
-
-    return rows;
+  // Format items as plain text content (only value per line)
+  const formatAsText = (items: Array<{ id: number; value: string }>) => {
+    return items.map((item) => item.value).join("\n");
   };
 
   const handleExport = () => {
     setLoading(true);
 
     try {
-      // Generate CSV content with all lists
-      let csvContent = "list,id,value\n"; // Header
+      // Generate plain text content with all lists, only value per line
+      const allValues = [
+        ...blockedNames,
+        ...blockedSlugs,
+        ...allowedNames,
+        ...allowedSlugs,
+      ];
+      const textContent = allValues.map((item) => item.value).join("\n");
 
-      // Add all lists data
-      csvContent += formatAsCsv(blockedNames, "blocked-names") + "\n";
-      csvContent += formatAsCsv(blockedSlugs, "blocked-slugs") + "\n";
-      csvContent += formatAsCsv(allowedNames, "allowed-names") + "\n";
-      csvContent += formatAsCsv(allowedSlugs, "allowed-slugs");
-
-      // Create a Blob with the CSV content
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      // Create a Blob with the text content
+      const blob = new Blob([textContent], {
+        type: "text/plain;charset=utf-8;",
+      });
 
       // Create a URL for the Blob
       const url = URL.createObjectURL(blob);
@@ -59,7 +53,7 @@ export default function BatchExportButton({
       // Set the file name
       const fileName = `sc-admin-all-lists-${
         new Date().toISOString().split("T")[0]
-      }.csv`;
+      }.txt`;
       link.download = fileName;
 
       // Append the link to the document
