@@ -1,4 +1,5 @@
 import pool from "./db-pg";
+import { debugLog } from "./logger";
 
 // Types
 export interface Message {
@@ -92,6 +93,7 @@ export async function getAccessHistory(
 
 // Blocked Names Functions
 export async function addToBlockedNames(value: string) {
+  debugLog("addToBlockedNames called with value:", value);
   const client = await pool.connect();
   try {
     const query = `
@@ -101,6 +103,7 @@ export async function addToBlockedNames(value: string) {
       RETURNING *
     `;
     const result = await client.query(query, [value]);
+    debugLog("addToBlockedNames result:", result.rows[0]);
     return result.rows[0];
   } finally {
     client.release();
@@ -160,6 +163,7 @@ export async function removeFromBlockedNames(value: string) {
 
 // Blocked Slugs Functions
 export async function addToBlockedSlugs(value: string) {
+  debugLog("addToBlockedSlugs called with value:", value);
   const client = await pool.connect();
   try {
     const query = `
@@ -169,11 +173,14 @@ export async function addToBlockedSlugs(value: string) {
       RETURNING *
     `;
     const result = await client.query(query, [value]);
+    debugLog("addToBlockedSlugs result:", result.rows[0]);
     return result.rows[0];
   } catch (error) {
     if (error instanceof Error && error.message.includes("23505")) {
+      debugLog("addToBlockedSlugs duplicate slug:", value, "skipping...");
       console.error("duplicate slug:", value, " skipping...");
     } else {
+      debugLog("addToBlockedSlugs error:", error);
       console.error("Error adding blocked slug " + value + ":", error);
       throw error;
     }
@@ -235,6 +242,7 @@ export async function removeFromBlockedSlugs(value: string) {
 
 // Allowed Names Functions
 export async function addToAllowedNames(value: string) {
+  debugLog("addToAllowedNames called with value:", value);
   const client = await pool.connect();
   try {
     const query = `
@@ -244,6 +252,7 @@ export async function addToAllowedNames(value: string) {
       RETURNING *
     `;
     const result = await client.query(query, [value]);
+    debugLog("addToAllowedNames result:", result.rows[0]);
     return result.rows[0];
   } finally {
     client.release();
@@ -303,6 +312,7 @@ export async function removeFromAllowedNames(value: string) {
 
 // Allowed Slugs Functions
 export async function addToAllowedSlugs(value: string) {
+  debugLog("addToAllowedSlugs called with value:", value);
   const client = await pool.connect();
   try {
     const query = `
@@ -312,6 +322,7 @@ export async function addToAllowedSlugs(value: string) {
       RETURNING *
     `;
     const result = await client.query(query, [value]);
+    debugLog("addToAllowedSlugs result:", result.rows[0]);
     return result.rows[0];
   } finally {
     client.release();
