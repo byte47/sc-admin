@@ -5,7 +5,7 @@ import path from "path";
 const REQUESTS_LOG_FILE = path.join(process.cwd(), "logs", "requests.log");
 
 export async function POST(request: NextRequest) {
-  let rawBody = await request.text();
+  const rawBody = await request.text();
   let body: any = rawBody;
   try {
     body = JSON.parse(rawBody);

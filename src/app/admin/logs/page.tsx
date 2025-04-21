@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getAccessLogsAction, getMessagesLogsAction } from "@/lib/actions";
-import { LogEntry, getLastRequestsLogs } from "@/lib/logger";
+import { LogEntry } from "@/lib/logger";
 
 export default function LogsPage() {
   const [accessLogs, setAccessLogs] = useState<LogEntry[]>([]);

@@ -20,11 +20,6 @@ export default function BatchExportButton({
 }: BatchExportButtonProps) {
   const [loading, setLoading] = useState(false);
 
-  // Format items as plain text content (only value per line)
-  const formatAsText = (items: Array<{ id: number; value: string }>) => {
-    return items.map((item) => item.value).join("\n");
-  };
-
   const handleExport = () => {
     setLoading(true);
 
