@@ -4,8 +4,9 @@ import { addBulkMessagesAction } from "@/lib/actions";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { screencontent } = body;
+    // Accept raw text input instead of JSON
+    const screencontent = await request.text();
+
     if (!screencontent || typeof screencontent !== "string") {
       return NextResponse.json(
         { error: "Missing or invalid screencontent" },
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
       flaggedMessages: flagged.map((m) => m.text),
     });
   } catch (error) {
+    console.error("POST /api/chat error:", error);
     return NextResponse.json(
       { error: "Failed to process chat messages", details: String(error) },
       { status: 500 }

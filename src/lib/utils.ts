@@ -387,13 +387,20 @@ export function extractChatData(
     const content = msgMatch[2].trim();
     const time = times[index] || null;
     const isSenderSelf = content.endsWith(".");
-
-    messages.push({
-      from: isSenderSelf ? "Me" : otherPerson,
-      to: isSenderSelf ? otherPerson : "Me",
-      text: content,
-      time: parseTimestamp(time),
-    });
+    let timeObj = null;
+    try {
+      timeObj = parseTimestamp(time);
+    } catch {
+      console.log("unable to parse time:", time);
+    }
+    if (timeObj) {
+      messages.push({
+        from: isSenderSelf ? "Me" : otherPerson,
+        to: isSenderSelf ? otherPerson : "Me",
+        text: content,
+        time: timeObj,
+      });
+    }
   }
 
   return messages;
