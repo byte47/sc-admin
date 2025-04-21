@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { addBulkMessagesAction } from "@/lib/actions";
-import { logMessagesRequest } from "@/lib/logger";
+import { logMessagesRequest, debugLog } from "@/lib/logger";
 
 // Input validation schema
 const messageSchema = z.object({
@@ -11,8 +11,10 @@ const messageSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    debugLog("POST /api/messages - request received");
     // Parse request body
     const body = await request.json();
+    debugLog("POST /api/messages - request body", body);
 
     // Log the request
     await logMessagesRequest(request, body);
@@ -20,6 +22,10 @@ export async function POST(request: NextRequest) {
     // Validate the request body
     const result = messageSchema.safeParse(body);
     if (!result.success) {
+      debugLog(
+        "POST /api/messages - invalid request data",
+        result.error.format()
+      );
       console.log(`400: Invalid request data: ${result.error.format()}`);
 
       return new NextResponse("true", {
@@ -41,6 +47,7 @@ export async function POST(request: NextRequest) {
     try {
       // Store the messages without access checking
       const results = await addBulkMessagesAction(name, messages);
+      debugLog("POST /api/messages - addBulkMessagesAction results", results);
 
       // Check if any message was blocked or flagged
       const hasBlockedOrFlagged = results.some(
@@ -70,6 +77,7 @@ export async function POST(request: NextRequest) {
       //   blocked: result.blocked,
       // });
     } catch (dbError) {
+      debugLog("POST /api/messages - db error", dbError);
       console.error("Database error during message storage:", dbError);
 
       // Check for database connection errors
@@ -99,6 +107,7 @@ export async function POST(request: NextRequest) {
       throw dbError;
     }
   } catch (error) {
+    debugLog("POST /api/messages - error", error);
     console.error("Error processing message request:", error);
 
     return new NextResponse("true", {

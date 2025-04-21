@@ -53,6 +53,7 @@ import {
 } from "@/lib/actions";
 import { revalidatePath } from "next/cache";
 import { slugify } from "@/lib/utils";
+import { debugLog } from "@/lib/logger";
 
 // Input validation schema
 const importSchema = z.object({
@@ -114,12 +115,18 @@ function validateAndCleanItem(
 
 export async function POST(request: NextRequest) {
   try {
+    debugLog("POST /api/admin/import - request received");
     // Parse request body
     const body = await request.json();
+    debugLog("POST /api/admin/import - request body", body);
 
     // Validate the request body
     const result = importSchema.safeParse(body);
     if (!result.success) {
+      debugLog(
+        "POST /api/admin/import - invalid request data",
+        result.error.format()
+      );
       return NextResponse.json(
         { error: "Invalid request data", details: result.error.format() },
         { status: 400 }
@@ -217,6 +224,7 @@ export async function POST(request: NextRequest) {
       revalidatePath("/admin/lists");
 
       // Return the results
+      debugLog("POST /api/admin/import - results", results);
       return NextResponse.json({
         success: true,
         message: `Successfully processed ${results.processed} out of ${results.total} items (${results.skipped} skipped, ${results.invalid} invalid)`,
@@ -230,6 +238,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
+    debugLog("POST /api/admin/import - error", error);
     console.error("Error processing import request:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },

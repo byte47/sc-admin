@@ -4,6 +4,7 @@ import {
   addToAllowedNamesAction,
   addToAllowedSlugsAction,
 } from "@/lib/actions";
+import { debugLog } from "@/lib/logger";
 
 // Input validation schema
 const addSchema = z.object({
@@ -13,12 +14,17 @@ const addSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
+    debugLog("POST /api/lists/allowed - request received");
     const body = await request.json();
+    debugLog("POST /api/lists/allowed - request body", body);
 
     // Validate the request body
     const result = addSchema.safeParse(body);
     if (!result.success) {
+      debugLog(
+        "POST /api/lists/allowed - invalid request data",
+        result.error.format()
+      );
       return NextResponse.json(
         { error: "Invalid request data", details: result.error.format() },
         { status: 400 }
@@ -27,6 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Add to allowed list using server action
     const { value, type } = result.data;
+    debugLog("POST /api/lists/allowed - add", { value, type });
 
     if (type === "name") {
       await addToAllowedNamesAction(value);
@@ -35,8 +42,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Return success
+    debugLog("POST /api/lists/allowed - response success");
     return NextResponse.json({ success: true });
   } catch (error) {
+    debugLog("POST /api/lists/allowed - error", error);
     console.error("Error adding to allowed list:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },

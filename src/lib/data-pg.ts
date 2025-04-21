@@ -166,6 +166,9 @@ export async function addToBlockedSlugs(value: string) {
       ON CONFLICT (value) DO NOTHING
       RETURNING *
     `;
+    // Log the query and value
+    console.log("Executing query:", query);
+    console.log("Value:", value);
     const result = await client.query(query, [value]);
     return result.rows[0];
   } finally {

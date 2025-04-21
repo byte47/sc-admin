@@ -9,6 +9,7 @@ import {
   getAllowedSlugsAction,
   getAccessHistoryAction,
 } from "@/lib/actions";
+import { debugLog } from "@/lib/logger";
 
 // Function to format file size
 function formatFileSize(bytes: number): string {
@@ -20,6 +21,7 @@ function formatFileSize(bytes: number): string {
 // Function to get database info
 export async function GET() {
   try {
+    debugLog("GET /api/admin/db/info - request received");
     const dataDir = config.data.path;
     const dbPath = path.join(dataDir, "sc-admin.db");
     const backupDir = path.join(dataDir, "backups");
@@ -71,6 +73,18 @@ export async function GET() {
     const blockedSlugs = await getBlockedSlugsAction();
     const historyEntries = await getAccessHistoryAction(1, 0); // Just to get the count
 
+    debugLog("GET /api/admin/db/info - response", {
+      dbPath,
+      fileSize,
+      lastModified,
+      backups,
+      totalBackups,
+      totalEntries: historyEntries.items.length,
+      allowedNamesCount: allowedNames.items.length,
+      allowedSlugsCount: allowedSlugs.items.length,
+      blockedNamesCount: blockedNames.items.length,
+      blockedSlugsCount: blockedSlugs.items.length,
+    });
     return NextResponse.json({
       dbPath,
       fileSize,
@@ -84,6 +98,7 @@ export async function GET() {
       blockedSlugsCount: blockedSlugs.items.length,
     });
   } catch (error) {
+    debugLog("GET /api/admin/db/info - error", error);
     console.error("Error getting database info:", error);
     return NextResponse.json(
       { error: "Failed to get database info" },

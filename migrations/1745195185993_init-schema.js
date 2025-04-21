@@ -23,23 +23,39 @@ exports.up = (pgm) => {
   });
 
   pgm.createTable("blocked_names", {
-    id: "id",
-    value: { type: "text", notNull: true, unique: true },
+    value: { type: "text", notNull: true, primaryKey: true },
+    created_at: {
+      type: "timestamp",
+      notNull: true,
+      default: pgm.func("current_timestamp"),
+    },
   });
 
   pgm.createTable("blocked_slugs", {
-    id: "id",
-    value: { type: "text", notNull: true, unique: true },
+    value: { type: "text", notNull: true, primaryKey: true },
+    created_at: {
+      type: "timestamp",
+      notNull: true,
+      default: pgm.func("current_timestamp"),
+    },
   });
 
   pgm.createTable("allowed_names", {
-    id: "id",
-    value: { type: "text", notNull: true, unique: true },
+    value: { type: "text", notNull: true, primaryKey: true },
+    created_at: {
+      type: "timestamp",
+      notNull: true,
+      default: pgm.func("current_timestamp"),
+    },
   });
 
   pgm.createTable("allowed_slugs", {
-    id: "id",
-    value: { type: "text", notNull: true, unique: true },
+    value: { type: "text", notNull: true, primaryKey: true },
+    created_at: {
+      type: "timestamp",
+      notNull: true,
+      default: pgm.func("current_timestamp"),
+    },
   });
 
   pgm.createTable("verification_queue", {

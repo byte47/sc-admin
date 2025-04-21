@@ -16,32 +16,32 @@ async function initializeSchema(client: any) {
   // Create blocked_names table
   await client.query(`
     CREATE TABLE IF NOT EXISTS blocked_names (
-      id SERIAL PRIMARY KEY,
-      value TEXT UNIQUE NOT NULL
+      value TEXT PRIMARY KEY,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
   // Create blocked_slugs table
   await client.query(`
     CREATE TABLE IF NOT EXISTS blocked_slugs (
-      id SERIAL PRIMARY KEY,
-      value TEXT UNIQUE NOT NULL
+      value TEXT PRIMARY KEY,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
   // Create allowed_names table
   await client.query(`
     CREATE TABLE IF NOT EXISTS allowed_names (
-      id SERIAL PRIMARY KEY,
-      value TEXT UNIQUE NOT NULL
+      value TEXT PRIMARY KEY,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
   // Create allowed_slugs table
   await client.query(`
     CREATE TABLE IF NOT EXISTS allowed_slugs (
-      id SERIAL PRIMARY KEY,
-      value TEXT UNIQUE NOT NULL
+      value TEXT PRIMARY KEY,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 

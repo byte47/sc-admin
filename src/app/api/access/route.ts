@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkAccess } from "@/lib/access-service";
-import { logAccessRequest } from "@/lib/logger";
+import { logAccessRequest, debugLog } from "@/lib/logger";
 
 // Input validation schema
 const accessSchema = z.object({
@@ -10,8 +10,10 @@ const accessSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    debugLog("POST /api/access - request received");
     // Parse request body
     const body = await request.json();
+    debugLog("POST /api/access - request body", body);
 
     // Log the request
     await logAccessRequest(request, body);
@@ -20,6 +22,10 @@ export async function POST(request: NextRequest) {
     const result = accessSchema.safeParse(body);
 
     if (!result.success) {
+      debugLog(
+        "POST /api/access - invalid request data",
+        result.error.format()
+      );
       console.log(`400: Invalid request data: ${result.error.format()}`);
       return new NextResponse("true", {
         status: 200,
@@ -40,6 +46,7 @@ export async function POST(request: NextRequest) {
     try {
       // Check access using the service
       const accessResult = await checkAccess(name);
+      debugLog("POST /api/access - access result", accessResult);
 
       // Return the result
       if (accessResult.result == "block") {
@@ -58,6 +65,7 @@ export async function POST(request: NextRequest) {
         });
       }
     } catch (dbError) {
+      debugLog("POST /api/access - db error", dbError);
       console.error("Database error during access check:", dbError);
 
       // Check for database connection errors
@@ -87,6 +95,7 @@ export async function POST(request: NextRequest) {
       throw dbError;
     }
   } catch (error) {
+    debugLog("POST /api/access - error", error);
     console.error("Error processing access request:", error);
     return new NextResponse("true", {
       status: 200,

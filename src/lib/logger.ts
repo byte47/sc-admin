@@ -143,3 +143,12 @@ export function getLastRequestsLogs(count: number = 100): LogEntry[] {
   const REQUESTS_LOG_FILE = path.join(process.cwd(), "logs", "requests.log");
   return getLastLogs(REQUESTS_LOG_FILE, count);
 }
+
+/**
+ * Debug log utility, prints only if DEBUG env var is set
+ */
+export function debugLog(...args: any[]) {
+  if (process.env.DEBUG === "1" || process.env.DEBUG === "true") {
+    console.log("[DEBUG]", ...args);
+  }
+}

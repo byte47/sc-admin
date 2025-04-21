@@ -98,10 +98,29 @@ export async function isSlugBlockedAction(slug: string): Promise<boolean> {
 }
 
 export async function addToBlockedSlugsAction(value: string) {
-  const result = await addToBlockedSlugs(value);
-  revalidatePath("/admin/lists");
-  revalidatePath("/admin/verification");
-  return result;
+  try {
+    const result = await addToBlockedSlugs(value);
+    revalidatePath("/admin/lists");
+    revalidatePath("/admin/verification");
+    return result;
+  } catch (error: any) {
+    // Check if the error is a unique constraint violation (code 23505 for PostgreSQL)
+    if (error.code === "23505") {
+      // Slug is already blocked, which is the intended state. Log or ignore.
+      console.log(
+        `Slug "${value}" is already blocked. Ignoring duplicate entry.`
+      );
+      // Revalidate paths even if it was already blocked, to ensure UI consistency
+      revalidatePath("/admin/lists");
+      revalidatePath("/admin/verification");
+      // Optionally return a specific value or null to indicate it was already present
+      return null;
+    } else {
+      // Re-throw any other errors
+      console.error("Error adding blocked slug:", error);
+      throw error;
+    }
+  }
 }
 
 export async function removeFromBlockedSlugsAction(value: string) {
