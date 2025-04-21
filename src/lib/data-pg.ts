@@ -3,9 +3,11 @@ import pool from "./db-pg";
 // Types
 export interface Message {
   id: number;
-  name: string;
-  slug: string;
-  content: string;
+  from: string;
+  to: string;
+  text: string;
+  is_flagged: boolean;
+  time: Date | null;
   created_at: Date;
 }
 
@@ -166,11 +168,15 @@ export async function addToBlockedSlugs(value: string) {
       ON CONFLICT (value) DO NOTHING
       RETURNING *
     `;
-    // Log the query and value
-    console.log("Executing query:", query);
-    console.log("Value:", value);
     const result = await client.query(query, [value]);
     return result.rows[0];
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("23505")) {
+      console.error("duplicate slug:", value, " skipping...");
+    } else {
+      console.error("Error adding blocked slug " + value + ":", error);
+      throw error;
+    }
   } finally {
     client.release();
   }
@@ -414,15 +420,28 @@ export async function updateVerificationStatus(
 }
 
 // Messages Functions
-export async function addMessage(name: string, slug: string, content: string) {
+export async function addMessage(
+  from: string,
+  to: string,
+  text: string,
+  is_flagged: boolean,
+  time: Date | null
+) {
   const client = await pool.connect();
   try {
     const query = `
-      INSERT INTO messages (name, slug, content)
-      VALUES ($1, $2, $3)
+      INSERT INTO messages ("from", "to", text, is_flagged, time)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT ("from", text, time) DO NOTHING
       RETURNING *
     `;
-    const result = await client.query(query, [name, slug, content]);
+    const result = await client.query(query, [
+      from,
+      to,
+      text,
+      is_flagged,
+      time,
+    ]);
     return result.rows[0];
   } finally {
     client.release();
@@ -443,9 +462,9 @@ export async function getMessages(
     if (search) {
       whereClause = `
         WHERE 
-          LOWER(name) LIKE LOWER($3) OR 
-          LOWER(slug) LIKE LOWER($3) OR 
-          LOWER(content) LIKE LOWER($3)
+          LOWER(from) LIKE LOWER($3) OR 
+          LOWER(to) LIKE LOWER($3) OR 
+          LOWER(text) LIKE LOWER($3)
       `;
       params.push(`%${search}%`);
     }
@@ -487,7 +506,7 @@ export async function getMessagesByName(
   try {
     const query = `
       SELECT * FROM messages
-      WHERE LOWER(name) = LOWER($1)
+      WHERE LOWER(from) = LOWER($1)
       ORDER BY created_at DESC
       LIMIT $2 OFFSET $3
     `;
@@ -507,7 +526,7 @@ export async function getMessagesBySlug(
   try {
     const query = `
       SELECT * FROM messages
-      WHERE LOWER(slug) = LOWER($1)
+      WHERE LOWER(to) = LOWER($1)
       ORDER BY created_at DESC
       LIMIT $2 OFFSET $3
     `;

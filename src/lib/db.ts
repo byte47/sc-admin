@@ -72,10 +72,13 @@ const initDb = async () => {
     await client.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
-        slug TEXT NOT NULL,
-        content TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        "from" TEXT NOT NULL,
+        "to" TEXT NOT NULL,
+        text TEXT NOT NULL,
+        is_flagged BOOLEAN DEFAULT FALSE,
+        time TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE ("from", text, time)
       )
     `);
 

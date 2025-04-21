@@ -331,3 +331,70 @@ export function slugify(text: string): string {
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+// Converts "3:16 PM" to ISO timestamp (today's date assumed)
+export function parseTimestamp(timeStr: string | null): string | null {
+  if (!timeStr) return null;
+  const now = new Date();
+  const [time, modifier] = timeStr.split(" ");
+  let hours;
+  const minutesRaw = time.split(":").map(Number)[1];
+  hours = Number(time.split(":")[0]);
+  const minutes = minutesRaw;
+
+  if (modifier === "PM" && hours < 12) hours += 12;
+  if (modifier === "AM" && hours === 12) hours = 0;
+
+  now.setHours(hours, minutes, 0, 0);
+  return now.toISOString();
+}
+
+// Extract chat messages from MacroDroid screen content
+export function extractChatData(
+  screenContent: string
+): { from: string; to: string; text: string; time: string | null }[] {
+  // 1. Extract other person's name (tv_user_name)
+  const userRegex = /\[in\.mohalla\.sharechat:id\/tv_user_name\]:\s*(.+)/;
+  const userMatch = screenContent.match(userRegex);
+  const otherPerson = userMatch ? userMatch[1].trim() : "Unknown";
+
+  // 2. Regex for messages and times
+  const messageRegex =
+    /\[in\.mohalla\.sharechat:id\/tv_message(?:\$(\d+))?\]:\s*(.+)/g;
+  const timeRegex =
+    /\[in\.mohalla\.sharechat:id\/tv_message_time(?:\$(\d+))?\]:\s*(.+)/g;
+
+  const messages: {
+    from: string;
+    to: string;
+    text: string;
+    time: string | null;
+  }[] = [];
+  const times: Record<string, string> = {};
+
+  // 3. Extract timestamps
+  let timeMatch;
+  while ((timeMatch = timeRegex.exec(screenContent)) !== null) {
+    const index = timeMatch[1] || "1";
+    const timeStr = timeMatch[2].trim();
+    times[index] = timeStr;
+  }
+
+  // 4. Extract messages and correlate with times
+  let msgMatch;
+  while ((msgMatch = messageRegex.exec(screenContent)) !== null) {
+    const index = msgMatch[1] || "1";
+    const content = msgMatch[2].trim();
+    const time = times[index] || null;
+    const isSenderSelf = content.endsWith(".");
+
+    messages.push({
+      from: isSenderSelf ? "Me" : otherPerson,
+      to: isSenderSelf ? otherPerson : "Me",
+      text: content,
+      time: parseTimestamp(time),
+    });
+  }
+
+  return messages;
+}

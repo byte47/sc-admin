@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { QueueItem, ListItem, HistoryItem, Message } from "./data";
-import { slugify, BLACKLISTED_MESSAGE_WORDS } from "./utils";
+import { QueueItem, ListItem, HistoryItem } from "./data";
+import { Message } from "./data-pg";
 import { getLastAccessLogs, getLastMessagesLogs, LogEntry } from "./logger";
 import {
   addAccessHistory,
@@ -266,39 +266,37 @@ export async function checkAccessAction(name: string, slug: string) {
 }
 
 // Message operations
-export async function addMessageAction(name: string, content: string) {
-  // Check for blacklisted words
-  const hasBlacklistedWords = BLACKLISTED_MESSAGE_WORDS.some((word) =>
-    content.toLowerCase().includes(word.toLowerCase())
-  );
-
-  if (hasBlacklistedWords) {
-    return { error: "Message contains inappropriate content" };
-  }
-
-  const slug = slugify(name);
-  const result = await addMessage(name, slug, content);
-  revalidatePath("/admin/messages");
+export async function addMessageAction(
+  from: string,
+  to: string,
+  text: string,
+  is_flagged: boolean,
+  time: Date | null
+) {
+  const result = await addMessage(from, to, text, is_flagged, time);
   return result;
 }
 
-export async function addBulkMessagesAction(name: string, messages: string[]) {
-  const slug = slugify(name);
+export async function addBulkMessagesAction(
+  messages: {
+    from: string;
+    to: string;
+    text: string;
+    is_flagged: boolean;
+    time: Date | null;
+  }[]
+) {
   const results = [];
-
-  for (const content of messages) {
-    // Check for blacklisted words
-    const hasBlacklistedWords = BLACKLISTED_MESSAGE_WORDS.some((word) =>
-      content.toLowerCase().includes(word.toLowerCase())
+  for (const msg of messages) {
+    const result = await addMessage(
+      msg.from,
+      msg.to,
+      msg.text,
+      msg.is_flagged,
+      msg.time
     );
-
-    if (!hasBlacklistedWords) {
-      const result = await addMessage(name, slug, content);
-      results.push(result);
-    }
+    results.push(result);
   }
-
-  revalidatePath("/admin/messages");
   return results;
 }
 
@@ -309,35 +307,42 @@ export async function getMessagesAction(
 ): Promise<{ items: Message[]; total: number }> {
   const result = await getMessages(page, limit, search);
   return {
-    items: result.items.map((msg) => ({
-      ...msg,
-      created_at: msg.created_at.toISOString(),
+    items: result.items.map((item) => ({
+      id: item.id,
+      from: item.from,
+      to: item.to,
+      text: item.text,
+      is_flagged: item.is_flagged,
+      time: item.time,
+      created_at: item.created_at,
     })),
     total: result.total,
   };
 }
 
 export async function getMessagesByNameAction(
-  name: string,
+  from: string,
   limit = 100,
   offset = 0
 ): Promise<Message[]> {
-  const messages = await getMessagesByName(name, limit, offset);
-  return messages.map((msg) => ({
-    ...msg,
-    created_at: msg.created_at.toISOString(),
+  const items = await getMessagesByName(from, limit, offset);
+  return items.map((item) => ({
+    ...item,
+    time: item.time,
+    created_at: item.created_at,
   }));
 }
 
 export async function getMessagesBySlugAction(
-  slug: string,
+  to: string,
   limit = 100,
   offset = 0
 ): Promise<Message[]> {
-  const messages = await getMessagesBySlug(slug, limit, offset);
-  return messages.map((msg) => ({
-    ...msg,
-    created_at: msg.created_at.toISOString(),
+  const items = await getMessagesBySlug(to, limit, offset);
+  return items.map((item) => ({
+    ...item,
+    time: item.time,
+    created_at: item.created_at,
   }));
 }
 

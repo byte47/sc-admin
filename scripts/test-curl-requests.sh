@@ -81,3 +81,11 @@ curl -s -X GET "$BASE_URL/api/admin/requests-logs" | jq
 # Admin DB info
 echo "\nGET /api/admin/db/info"
 curl -s -X GET "$BASE_URL/api/admin/db/info" | jq
+
+# Chat extraction (MacroDroid screencontent)
+echo "\nPOST /api/chat"
+curl -s -X POST "$BASE_URL/api/chat" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "screencontent": "[in.mohalla.sharechat:id/tv_user_name]: Hima\n[in.mohalla.sharechat:id/tv_message]: Hi.\n[in.mohalla.sharechat:id/tv_message$2]: Hello\n[in.mohalla.sharechat:id/tv_message_time]:  3:16 PM\n[in.mohalla.sharechat:id/tv_message_time$2]:  3:17 PM\n"
+  }' | jq

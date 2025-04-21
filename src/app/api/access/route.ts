@@ -26,7 +26,9 @@ export async function POST(request: NextRequest) {
         "POST /api/access - invalid request data",
         result.error.format()
       );
-      console.log(`400: Invalid request data: ${result.error.format()}`);
+      console.log(
+        `400: POST /api/access Invalid request data: ${result.error.format()}`
+      );
       return new NextResponse("true", {
         status: 200,
         headers: {

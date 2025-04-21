@@ -156,7 +156,7 @@ async function MessagesTable({ searchParams }: MessagesTableProps) {
               <TableBody>
                 {messages.map((message) => {
                   const { flagged, blocked } = checkMessageContent(
-                    message.content
+                    message.text
                   );
                   return (
                     <TableRow
@@ -166,10 +166,10 @@ async function MessagesTable({ searchParams }: MessagesTableProps) {
                       }
                     >
                       <TableCell>{message.id}</TableCell>
-                      <TableCell>{message.name}</TableCell>
-                      <TableCell>{message.slug}</TableCell>
+                      <TableCell>{message.from}</TableCell>
+                      <TableCell>{message.to}</TableCell>
                       <TableCell className='max-w-xs truncate'>
-                        {message.content}
+                        {message.text}
                       </TableCell>
                       <TableCell>
                         {blocked && (

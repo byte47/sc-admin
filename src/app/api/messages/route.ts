@@ -26,7 +26,9 @@ export async function POST(request: NextRequest) {
         "POST /api/messages - invalid request data",
         result.error.format()
       );
-      console.log(`400: Invalid request data: ${result.error.format()}`);
+      console.log(
+        `400: /api/messages Invalid request data: ${result.error.format()}`
+      );
 
       return new NextResponse("true", {
         status: 200,
@@ -46,7 +48,14 @@ export async function POST(request: NextRequest) {
 
     try {
       // Store the messages without access checking
-      const results = await addBulkMessagesAction(name, messages);
+      const messagesToStore = messages.map((text: string) => ({
+        from: name,
+        to: "",
+        text,
+        is_flagged: false,
+        time: null,
+      }));
+      const results = await addBulkMessagesAction(messagesToStore);
       debugLog("POST /api/messages - addBulkMessagesAction results", results);
 
       // Check if any message was blocked or flagged
