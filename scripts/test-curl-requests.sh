@@ -10,7 +10,7 @@ curl -s -X GET "$BASE_URL/api/health" | jq
 echo "\nPOST /api/access"
 curl -s -X POST "$BASE_URL/api/access" \
   -H "Content-Type: application/json" \
-  -d '{"name": "example"}' | jq
+  -d '{"name": "aslam"}' | jq
 
 # Bulk messages
 echo "\nPOST /api/messages"

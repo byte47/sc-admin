@@ -26,6 +26,10 @@ import {
   getMessages,
   getMessagesByName,
   getMessagesBySlug,
+  isBlockedSlug,
+  isAllowedSlug,
+  isBlockedName,
+  isAllowedName,
 } from "./data-pg";
 
 // Access history operations
@@ -56,10 +60,7 @@ export async function getAccessHistoryAction(
 
 // Blocked names operations
 export async function isNameBlockedAction(name: string): Promise<boolean> {
-  const blockedNames = await getBlockedNames();
-  return blockedNames.items.some(
-    (value: string) => value.toLowerCase() === name.toLowerCase()
-  );
+  return isBlockedName(name);
 }
 
 export async function addToBlockedNamesAction(value: string) {
@@ -91,10 +92,7 @@ export async function getBlockedNamesAction(
 
 // Blocked slugs operations
 export async function isSlugBlockedAction(slug: string): Promise<boolean> {
-  const blockedSlugs = await getBlockedSlugs();
-  return blockedSlugs.items.some(
-    (value: string) => value.toLowerCase() === slug.toLowerCase()
-  );
+  return isBlockedSlug(slug);
 }
 
 export async function addToBlockedSlugsAction(value: string) {
@@ -145,10 +143,7 @@ export async function getBlockedSlugsAction(
 
 // Allowed names operations
 export async function isNameAllowedAction(name: string): Promise<boolean> {
-  const allowedNames = await getAllowedNames();
-  return allowedNames.items.some(
-    (value: string) => value.toLowerCase() === name.toLowerCase()
-  );
+  return isAllowedName(name);
 }
 
 export async function addToAllowedNamesAction(value: string) {
@@ -180,10 +175,7 @@ export async function getAllowedNamesAction(
 
 // Allowed slugs operations
 export async function isSlugAllowedAction(slug: string): Promise<boolean> {
-  const allowedSlugs = await getAllowedSlugs();
-  return allowedSlugs.items.some(
-    (value: string) => value.toLowerCase() === slug.toLowerCase()
-  );
+  return isAllowedSlug(slug);
 }
 
 export async function addToAllowedSlugsAction(value: string) {

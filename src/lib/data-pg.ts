@@ -547,3 +547,48 @@ export async function getMessagesBySlug(
     client.release();
   }
 }
+
+// Optimized DB-level existence checks
+export async function isBlockedSlug(slug: string): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    const query = `SELECT 1 FROM blocked_slugs WHERE value ILIKE $1 LIMIT 1`;
+    const result = await client.query(query, [slug]);
+    return (result.rowCount ?? 0) > 0;
+  } finally {
+    client.release();
+  }
+}
+
+export async function isAllowedSlug(slug: string): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    const query = `SELECT 1 FROM allowed_slugs WHERE value ILIKE $1 LIMIT 1`;
+    const result = await client.query(query, [slug]);
+    return (result.rowCount ?? 0) > 0;
+  } finally {
+    client.release();
+  }
+}
+
+export async function isBlockedName(name: string): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    const query = `SELECT 1 FROM blocked_names WHERE value ILIKE $1 LIMIT 1`;
+    const result = await client.query(query, [name]);
+    return (result.rowCount ?? 0) > 0;
+  } finally {
+    client.release();
+  }
+}
+
+export async function isAllowedName(name: string): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    const query = `SELECT 1 FROM allowed_names WHERE value ILIKE $1 LIMIT 1`;
+    const result = await client.query(query, [name]);
+    return (result.rowCount ?? 0) > 0;
+  } finally {
+    client.release();
+  }
+}
