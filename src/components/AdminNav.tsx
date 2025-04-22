@@ -21,8 +21,8 @@ const links = [
   { href: "/admin/lists", label: "Manage Lists", icon: List },
   { href: "/admin/verification", label: "Verification", icon: ClipboardCheck },
   { href: "/admin/messages", label: "Messages", icon: MessagesSquare },
-  { href: "/admin/logs", label: "API Logs", icon: FileText },
   { href: "/admin/history", label: "History", icon: History },
+  { href: "/admin/logs", label: "Request Body", icon: FileText },
 ];
 
 export default function AdminNav() {

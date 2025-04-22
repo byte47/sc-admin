@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { QueueItem, ListItem, HistoryItem } from "./data";
 import { Message } from "./data-pg";
-import { getLastAccessLogs, getLastMessagesLogs, LogEntry } from "./logger";
 import {
   addAccessHistory,
   getAccessHistory,
@@ -336,16 +335,4 @@ export async function getMessagesBySlugAction(
     time: item.time,
     created_at: item.created_at,
   }));
-}
-
-export async function getAccessLogsAction(
-  count: number = 100
-): Promise<LogEntry[]> {
-  return getLastAccessLogs(count);
-}
-
-export async function getMessagesLogsAction(
-  count: number = 100
-): Promise<LogEntry[]> {
-  return getLastMessagesLogs(count);
 }

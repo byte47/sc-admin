@@ -123,20 +123,6 @@ export function getLastLogs(logFile: string, count: number = 100): LogEntry[] {
 }
 
 /**
- * Get the last n access log entries
- */
-export function getLastAccessLogs(count: number = 100): LogEntry[] {
-  return getLastLogs(ACCESS_LOG_FILE, count);
-}
-
-/**
- * Get the last n messages log entries
- */
-export function getLastMessagesLogs(count: number = 100): LogEntry[] {
-  return getLastLogs(MESSAGES_LOG_FILE, count);
-}
-
-/**
  * Get the last n requests log entries
  */
 export function getLastRequestsLogs(count: number = 100): LogEntry[] {
