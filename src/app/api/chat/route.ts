@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     // Prepare messages for DB, flag if blacklisted
     let shouldSendTelegramAlert = false;
     let alertMessage = "";
+    let is_flagged = false;
     const messagesToMe = chatMessages.filter((msg) => msg.to === "Me");
     if (messagesToMe.length > 2) {
       shouldSendTelegramAlert = true;
@@ -44,21 +45,21 @@ export async function POST(request: NextRequest) {
         msg.text.toLowerCase().includes(word.toLowerCase())
       );
       // Flag if message is to 'Me' and text is 'b', 'boy', or 'man' (case-insensitive)
-      const is_special_flag =
+      const is_boy_flag =
         msg.to === "Me" &&
         ["b", "boy", "man", "gay", "lesbian"].includes(
           msg.text.trim().toLowerCase()
         );
       // Telegram alert if message is to 'Me' and text is 'g' or 'girl' (case-insensitive)
-      const is_telegram_alert =
+      const is_girl_alert =
         msg.to === "Me" &&
         ["g", "girl"].includes(msg.text.trim().toLowerCase());
 
-      if (is_telegram_alert) {
+      if (is_girl_alert && shouldSendTelegramAlert === false) {
         shouldSendTelegramAlert = true;
         alertMessage = `ALERT: '${msg.text}' - '${msg.from}'`;
       }
-      const is_flagged = is_blacklisted || is_special_flag;
+      is_flagged = is_blacklisted || is_boy_flag;
       return {
         ...msg,
         is_flagged,
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    if (shouldSendTelegramAlert && alertMessage) {
+    if (shouldSendTelegramAlert && alertMessage && !is_flagged) {
       await sendTelegramAlert(alertMessage);
     }
 
