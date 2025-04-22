@@ -151,7 +151,7 @@ export default function DashboardTables() {
         isActive = diffMs < 2 * 60 * 1000; // 2 minutes
         // Human readable time since
         const diffSec = Math.floor(diffMs / 1000);
-        if (diffSec < 6) {
+        if (diffSec < 15) {
           timeSince = `just now`;
         } else if (diffSec < 60) {
           timeSince = `${diffSec} second${diffSec === 1 ? "" : "s"} ago`;
