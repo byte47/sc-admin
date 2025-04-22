@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export BASE_URL="http://localhost:3000"
+export BASE_URL="https://sc-admin.byte47.com"
 
 # Health check
 echo "\nGET /api/health"

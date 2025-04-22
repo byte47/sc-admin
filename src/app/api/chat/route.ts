@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
       // Flag if message is to 'Me' and text is 'b', 'boy', or 'man' (case-insensitive)
       const is_special_flag =
         msg.to === "Me" &&
-        ["b", "boy", "man"].includes(msg.text.trim().toLowerCase());
+        ["b", "boy", "man", "gay", "lesbian"].includes(
+          msg.text.trim().toLowerCase()
+        );
       // Telegram alert if message is to 'Me' and text is 'g' or 'girl' (case-insensitive)
       const is_telegram_alert =
         msg.to === "Me" &&
