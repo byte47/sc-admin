@@ -119,42 +119,60 @@ export default function DashboardTables() {
   }
 
   // --- Banner logic ---
-  let mostRecent: Date | null = null;
-  let timeSince: string = "";
-  if (lastActive) {
-    const lastMessage = lastActive.lastMessage
-      ? new Date(lastActive.lastMessage)
-      : null;
-    const lastAccess = lastActive.lastAccess
-      ? new Date(lastActive.lastAccess)
-      : null;
-    if (lastMessage && lastAccess) {
-      mostRecent = lastMessage > lastAccess ? lastMessage : lastAccess;
-    } else if (lastMessage) {
-      mostRecent = lastMessage;
-    } else if (lastAccess) {
-      mostRecent = lastAccess;
+  const [bannerState, setBannerState] = useState({
+    isActive: false,
+    timeSince: "No activity yet.",
+  });
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    function updateBanner() {
+      let mostRecent: Date | null = null;
+      let timeSince: string = "";
+      if (lastActive) {
+        const lastMessage = lastActive.lastMessage
+          ? new Date(lastActive.lastMessage)
+          : null;
+        const lastAccess = lastActive.lastAccess
+          ? new Date(lastActive.lastAccess)
+          : null;
+        if (lastMessage && lastAccess) {
+          mostRecent = lastMessage > lastAccess ? lastMessage : lastAccess;
+        } else if (lastMessage) {
+          mostRecent = lastMessage;
+        } else if (lastAccess) {
+          mostRecent = lastAccess;
+        }
+      }
+      const now = new Date();
+      let isActive = false;
+      if (mostRecent) {
+        const diffMs = now.getTime() - mostRecent.getTime();
+        isActive = diffMs < 2 * 60 * 1000; // 2 minutes
+        // Human readable time since
+        const diffSec = Math.floor(diffMs / 1000);
+        if (diffSec < 6) {
+          timeSince = `just now`;
+        } else if (diffSec < 60) {
+          timeSince = `${diffSec} second${diffSec === 1 ? "" : "s"} ago`;
+        } else if (diffSec < 3600) {
+          const min = Math.floor(diffSec / 60);
+          timeSince = `${min} minute${min === 1 ? "" : "s"} ago`;
+        } else {
+          const hr = Math.floor(diffSec / 3600);
+          timeSince = `${hr} hour${hr === 1 ? "" : "s"} ago`;
+        }
+      } else {
+        timeSince = "No activity yet.";
+      }
+      setBannerState({ isActive, timeSince });
     }
-  }
-  const now = new Date();
-  let isActive = false;
-  if (mostRecent) {
-    const diffMs = now.getTime() - mostRecent.getTime();
-    isActive = diffMs < 2 * 60 * 1000; // 2 minutes
-    // Human readable time since
-    const diffSec = Math.floor(diffMs / 1000);
-    if (diffSec < 60) {
-      timeSince = `${diffSec} second${diffSec === 1 ? "" : "s"} ago`;
-    } else if (diffSec < 3600) {
-      const min = Math.floor(diffSec / 60);
-      timeSince = `${min} minute${min === 1 ? "" : "s"} ago`;
-    } else {
-      const hr = Math.floor(diffSec / 3600);
-      timeSince = `${hr} hour${hr === 1 ? "" : "s"} ago`;
-    }
-  } else {
-    timeSince = "No activity yet.";
-  }
+    updateBanner();
+    interval = setInterval(updateBanner, 1000);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [lastActive]);
   // --- End banner logic ---
 
   return (
@@ -162,13 +180,15 @@ export default function DashboardTables() {
       {/* System Status Banner */}
       <div
         className={`w-full py-2 px-4 rounded text-center font-semibold mb-4 ${
-          isActive
+          bannerState.isActive
             ? "bg-green-100 text-green-800 border border-green-300"
             : "bg-red-100 text-red-800 border border-red-300"
         }`}
       >
-        {isActive ? "System is active " : "System is not running or inactive "}(
-        {timeSince})
+        {bannerState.isActive
+          ? "System is active "
+          : "System is not running or inactive "}
+        ({bannerState.timeSince})
       </div>
       {/* Latest Chats Section */}
       <div>
