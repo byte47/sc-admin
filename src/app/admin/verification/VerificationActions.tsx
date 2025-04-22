@@ -104,7 +104,7 @@ export default function VerificationActions({
                         size='icon'
                         onClick={() => handleAction("block", "slug")}
                         disabled={!!loading}
-                        className='h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50 p-0'
+                        className='h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50 p-0 min-w-[44px] min-h-[44px] px-0.5 sm:min-w-0 sm:min-h-0 sm:px-0'
                       >
                         {loading === "block-slug" ? (
                           <div className='h-3 w-3 animate-spin rounded-full border-2 border-solid border-current border-r-transparent' />
@@ -123,7 +123,7 @@ export default function VerificationActions({
                         size='icon'
                         onClick={() => handleAction("allow", "slug")}
                         disabled={!!loading}
-                        className='h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50 p-0'
+                        className='h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50 p-0 min-w-[44px] min-h-[44px] px-0.5 sm:min-w-0 sm:min-h-0 sm:px-0'
                       >
                         {loading === "allow-slug" ? (
                           <div className='h-3 w-3 animate-spin rounded-full border-2 border-solid border-current border-r-transparent' />
@@ -183,7 +183,7 @@ export default function VerificationActions({
                   size='icon'
                   onClick={() => handleAction("block", "name")}
                   disabled={!!loading}
-                  className='h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50 p-0'
+                  className='h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50 p-0 min-w-[44px] min-h-[44px] px-0.5 sm:min-w-0 sm:min-h-0 sm:px-0'
                 >
                   {loading === "block-name" ? (
                     <div className='h-3 w-3 animate-spin rounded-full border-2 border-solid border-current border-r-transparent' />
@@ -201,7 +201,7 @@ export default function VerificationActions({
                   size='icon'
                   onClick={() => handleAction("allow", "name")}
                   disabled={!!loading}
-                  className='h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50 p-0'
+                  className='h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50 p-0 min-w-[44px] min-h-[44px] px-0.5 sm:min-w-0 sm:min-h-0 sm:px-0'
                 >
                   {loading === "allow-name" ? (
                     <div className='h-3 w-3 animate-spin rounded-full border-2 border-solid border-current border-r-transparent' />
