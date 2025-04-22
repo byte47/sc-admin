@@ -32,11 +32,11 @@ export default function RootLayout({
       >
         <StackProvider app={stackServerApp}>
           <StackTheme>
-            <div className='flex min-h-screen'>
-              <aside className='w-64 border-r'>
+            <div className='flex flex-col min-h-screen md:flex-row'>
+              <aside className='w-full md:w-64 border-b md:border-b-0 md:border-r'>
                 <AdminNav />
               </aside>
-              <main className='flex-1 p-8'>{children}</main>
+              <main className='flex-1 p-2 sm:p-4 md:p-8'>{children}</main>
             </div>
           </StackTheme>
         </StackProvider>

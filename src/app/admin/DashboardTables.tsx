@@ -28,11 +28,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 function ChatBox({ session }: { session: any }) {
   // session: { participants: [string, string], messages: [{from, to, text, time}] }
   return (
-    <Card
-      className='whatsapp-chat-box bg-slate-50 border-slate-200 shadow-md max-w-xs mx-auto'
-      style={{ width: 400 }}
-    >
-      {" "}
+    <Card className='whatsapp-chat-box bg-slate-50 border-slate-200 shadow-md max-w-xs w-full sm:max-w-sm md:max-w-xs mx-auto'>
       <CardHeader className='py-2 px-3 bg-slate-100 rounded-t-md'>
         <CardTitle className='text-base font-semibold text-slate-900'>
           {session.participants.filter((p: string) => p !== "Me").join(", ")}
@@ -49,7 +45,7 @@ function ChatBox({ session }: { session: any }) {
             : ""}
         </CardDescription>
       </CardHeader>
-      <CardContent className='p-3 space-y-2 h-[32rem] overflow-y-auto bg-slate-50'>
+      <CardContent className='p-3 space-y-2 h-80 sm:h-[32rem] overflow-y-auto bg-slate-50'>
         {session.messages
           .slice(0)
           .reverse()
@@ -193,7 +189,7 @@ export default function DashboardTables() {
       {/* Latest Chats Section */}
       <div>
         <h2 className='text-xl font-bold mb-2'>Latest Sessions</h2>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
           {chatSessions && chatSessions.length > 0 ? (
             chatSessions.map((session: any, idx: number) => (
               <ChatBox key={idx} session={session} />
@@ -217,39 +213,44 @@ export default function DashboardTables() {
               No pending items to verify.
             </p>
           ) : (
-            <Table className='border-collapse'>
-              <TableHeader>
-                <TableRow className='border-b hover:bg-transparent'>
-                  <TableHead className='py-2 w-[70%]'>Item Details</TableHead>
-                  <TableHead className='py-2 w-[30%]'>Queued</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {verifications.map((item: any) => (
-                  <TableRow key={item.id} className='border-b hover:bg-gray-50'>
-                    <TableCell className='py-2'>
-                      <VerificationActions
-                        item={item}
-                        onRemove={() => handleRemove(item.id)}
-                      />
-                    </TableCell>
-                    <TableCell className='py-2 text-sm text-muted-foreground'>
-                      <div className='flex items-center justify-between'>
-                        <span>
-                          {new Date(item.queued_at).toLocaleString("en-US", {
-                            timeZone: "Asia/Kolkata",
-                          })}
-                        </span>
-                        <DiscardButton
-                          itemId={item.id}
+            <div className='overflow-x-auto'>
+              <Table className='border-collapse min-w-full'>
+                <TableHeader>
+                  <TableRow className='border-b hover:bg-transparent'>
+                    <TableHead className='py-2 w-[70%]'>Item Details</TableHead>
+                    <TableHead className='py-2 w-[30%]'>Queued</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {verifications.map((item: any) => (
+                    <TableRow
+                      key={item.id}
+                      className='border-b hover:bg-gray-50'
+                    >
+                      <TableCell className='py-2'>
+                        <VerificationActions
+                          item={item}
                           onRemove={() => handleRemove(item.id)}
                         />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                      <TableCell className='py-2 text-sm text-muted-foreground'>
+                        <div className='flex items-center justify-between'>
+                          <span>
+                            {new Date(item.queued_at).toLocaleString("en-US", {
+                              timeZone: "Asia/Kolkata",
+                            })}
+                          </span>
+                          <DiscardButton
+                            itemId={item.id}
+                            onRemove={() => handleRemove(item.id)}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
         <CardFooter>
@@ -273,42 +274,44 @@ export default function DashboardTables() {
               No access history to display.
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Result</TableHead>
-                  <TableHead>Reason</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.items.map((item: any) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.slug}</TableCell>
-                    <TableCell>
-                      {new Date(item.access_time).toLocaleString("en-US", {
-                        timeZone: "Asia/Kolkata",
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={
-                          item.result === "allow"
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }
-                      >
-                        {item.result}
-                      </span>
-                    </TableCell>
-                    <TableCell>{item.reason || "-"}</TableCell>
+            <div className='overflow-x-auto'>
+              <Table className='min-w-full'>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Result</TableHead>
+                    <TableHead>Reason</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {history.items.map((item: any) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.slug}</TableCell>
+                      <TableCell>
+                        {new Date(item.access_time).toLocaleString("en-US", {
+                          timeZone: "Asia/Kolkata",
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={
+                            item.result === "allow"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }
+                        >
+                          {item.result}
+                        </span>
+                      </TableCell>
+                      <TableCell>{item.reason || "-"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
         <CardFooter>
