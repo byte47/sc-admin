@@ -333,18 +333,44 @@ export function cn(...inputs: ClassValue[]) {
 // Converts "3:16 PM" to ISO timestamp (today's date assumed)
 export function parseTimestamp(timeStr: string | null): string | null {
   if (!timeStr) return null;
-  const now = new Date();
+
+  // Helper to determine if today is in DST for PT (PDT)
+  function isPacificDaylightTime(date: Date): boolean {
+    // US DST starts 2nd Sunday in March, ends 1st Sunday in November
+    const year = date.getFullYear();
+    // 2nd Sunday in March
+    const start = new Date(Date.UTC(year, 2, 8, 10)); // 2am PT = 10am UTC
+    start.setUTCDate(8 + ((7 - start.getUTCDay()) % 7));
+    // 1st Sunday in November
+    const end = new Date(Date.UTC(year, 10, 1, 9)); // 2am PT = 9am UTC
+    end.setUTCDate(1 + ((7 - end.getUTCDay()) % 7));
+    return date >= start && date < end;
+  }
+
   const [time, modifier] = timeStr.split(" ");
-  let hours;
-  const minutesRaw = time.split(":").map(Number)[1];
-  hours = Number(time.split(":")[0]);
-  const minutes = minutesRaw;
+  let hours = Number(time.split(":")[0]);
+  const minutes = Number(time.split(":")[1]);
 
   if (modifier === "PM" && hours < 12) hours += 12;
   if (modifier === "AM" && hours === 12) hours = 0;
 
-  now.setHours(hours, minutes, 0, 0);
-  return now.toISOString();
+  // Create a date for today in PT
+  const now = new Date();
+  // Get today's date parts in UTC
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth();
+  const day = now.getUTCDate();
+
+  // Determine if today is in DST for PT
+  const isDST = isPacificDaylightTime(new Date(Date.UTC(year, month, day)));
+  const PT_OFFSET = isDST ? -7 : -8;
+
+  // Create a UTC date for the given PT time
+  // PT is UTC-8 or UTC-7, so to get UTC, add the offset
+  const utcDate = new Date(
+    Date.UTC(year, month, day, hours - PT_OFFSET, minutes, 0, 0)
+  );
+  return utcDate.toISOString();
 }
 
 // Extract chat messages from MacroDroid screen content

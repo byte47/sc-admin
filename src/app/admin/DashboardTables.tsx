@@ -219,7 +219,7 @@ export default function DashboardTables() {
                       <span
                         className={
                           item.result === "allow"
-                            ? "text-slate-600"
+                            ? "text-green-600"
                             : "text-red-600"
                         }
                       >
