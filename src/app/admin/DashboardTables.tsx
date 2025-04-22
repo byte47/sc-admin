@@ -90,14 +90,14 @@ export default function DashboardTables() {
     "/api/verification-queue",
     fetcher,
     {
-      refreshInterval: 5000,
+      refreshInterval: 30000,
     }
   );
   const { data: history } = useSWR("/api/access-history?limit=30", fetcher, {
-    refreshInterval: 5000,
+    refreshInterval: 4000,
   });
   const { data: chatSessions } = useSWR("/api/chat-sessions?limit=3", fetcher, {
-    refreshInterval: 5000,
+    refreshInterval: 4000,
   });
   // New: fetch last active times
   const { data: lastActive } = useSWR(
