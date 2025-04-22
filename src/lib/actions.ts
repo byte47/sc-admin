@@ -297,7 +297,7 @@ export async function getMessagesAction(
   limit: number = 10,
   search?: string
 ): Promise<{ items: Message[]; total: number }> {
-  const result = await getMessages(page, limit, search);
+  const result = await getMessages(page, limit, search, true);
   return {
     items: result.items.map((item) => ({
       id: item.id,

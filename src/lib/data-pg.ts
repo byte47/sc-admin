@@ -462,22 +462,28 @@ export async function addMessage(
 export async function getMessages(
   page: number = 1,
   limit: number = 10,
-  search?: string
+  search?: string,
+  lastHourOnly: boolean = false
 ): Promise<{ items: Message[]; total: number }> {
   const client = await pool.connect();
   try {
     const offset = (page - 1) * limit;
     let whereClause = "";
     const params: any[] = [limit, offset];
+    let paramIndex = 3;
+
+    if (lastHourOnly) {
+      whereClause = "WHERE created_at >= NOW() - INTERVAL '30 minutes'";
+    }
 
     if (search) {
-      whereClause = `
-        WHERE 
-          LOWER(from) LIKE LOWER($3) OR 
-          LOWER(to) LIKE LOWER($3) OR 
-          LOWER(text) LIKE LOWER($3)
-      `;
+      if (whereClause) {
+        whereClause += ` AND (LOWER(\"from\") LIKE LOWER($${paramIndex}) OR LOWER(\"to\") LIKE LOWER($${paramIndex}) OR LOWER(text) LIKE LOWER($${paramIndex}))`;
+      } else {
+        whereClause = `WHERE (LOWER(\"from\") LIKE LOWER($${paramIndex}) OR LOWER(\"to\") LIKE LOWER($${paramIndex}) OR LOWER(text) LIKE LOWER($${paramIndex}))`;
+      }
       params.push(`%${search}%`);
+      paramIndex++;
     }
 
     const countQuery = `
@@ -495,7 +501,7 @@ export async function getMessages(
     `;
 
     const [countResult, itemsResult] = await Promise.all([
-      client.query(countQuery, search ? [params[2]] : []),
+      client.query(countQuery, params.slice(2)),
       client.query(itemsQuery, params),
     ]);
 
