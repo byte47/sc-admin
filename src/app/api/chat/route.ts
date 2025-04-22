@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
     const messagesToMe = chatMessages.filter((msg) => msg.to === "Me");
     if (messagesToMe.length > 2) {
       shouldSendTelegramAlert = true;
-      alertMessage = `ALERT: ${messagesToMe.length} messages from '${
+      alertMessage = `(${messagesToMe.length}). '${
         messagesToMe[0].from
-      }' - ${messagesToMe.map((m) => `'${m.text}'`).join("; ")}`;
+      }' : ${messagesToMe.map((m) => `'${m.text}'`).join("; ")}`;
     }
     const messagesToStore = chatMessages.map((msg) => {
       const is_blacklisted = BLACKLISTED_MESSAGE_WORDS.some((word) =>

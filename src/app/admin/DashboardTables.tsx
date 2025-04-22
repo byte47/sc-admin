@@ -25,6 +25,65 @@ import { useState, useEffect } from "react";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+function ChatBox({ session }: { session: any }) {
+  // session: { participants: [string, string], messages: [{from, to, text, time}] }
+  return (
+    <Card
+      className='whatsapp-chat-box bg-slate-50 border-slate-200 shadow-md max-w-xs mx-auto'
+      style={{ width: 400 }}
+    >
+      {" "}
+      <CardHeader className='py-2 px-3 bg-slate-100 rounded-t-md'>
+        <CardTitle className='text-base font-semibold text-slate-900'>
+          {session.participants.filter((p: string) => p !== "Me").join(", ")}
+        </CardTitle>
+        <CardDescription className='text-xs text-slate-700'>
+          Last message:{" "}
+          {session.messages[session.messages.length - 1].time
+            ? new Date(
+                session.messages[session.messages.length - 1].time
+              ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : ""}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className='p-3 space-y-2 h-[32rem] overflow-y-auto bg-slate-50'>
+        {session.messages
+          .slice(0)
+          .reverse()
+          .map((msg: any, idx: number) => (
+            <div
+              key={idx}
+              className={`flex ${
+                msg.from === "Me" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`rounded-lg px-3 py-2 max-w-[70%] text-sm shadow-sm ${
+                  msg.from === "Me"
+                    ? "bg-slate-200 text-right text-slate-900"
+                    : "bg-white text-left text-gray-900 border border-slate-100"
+                }`}
+              >
+                <div>{msg.text}</div>
+                <div className='text-[10px] text-gray-500 mt-1 text-right'>
+                  {msg.time
+                    ? new Date(msg.time).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : ""}
+                </div>
+              </div>
+            </div>
+          ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DashboardTables() {
   // Poll every 5 seconds
   const { data: swrVerifications } = useSWR(
@@ -35,6 +94,9 @@ export default function DashboardTables() {
     }
   );
   const { data: history } = useSWR("/api/access-history?limit=30", fetcher, {
+    refreshInterval: 5000,
+  });
+  const { data: chatSessions } = useSWR("/api/chat-sessions?limit=3", fetcher, {
     refreshInterval: 5000,
   });
 
@@ -50,6 +112,21 @@ export default function DashboardTables() {
 
   return (
     <div className='space-y-8'>
+      {/* Latest Chats Section */}
+      <div>
+        <h2 className='text-xl font-bold mb-2'>Latest Sessions</h2>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          {chatSessions && chatSessions.length > 0 ? (
+            chatSessions.map((session: any, idx: number) => (
+              <ChatBox key={idx} session={session} />
+            ))
+          ) : (
+            <p className='col-span-3 text-center text-muted-foreground'>
+              No recent chat sessions.
+            </p>
+          )}
+        </div>
+      </div>
       {/* Verification Table */}
       <Card>
         <CardHeader>
@@ -142,7 +219,7 @@ export default function DashboardTables() {
                       <span
                         className={
                           item.result === "allow"
-                            ? "text-green-600"
+                            ? "text-slate-600"
                             : "text-red-600"
                         }
                       >
