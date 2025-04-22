@@ -99,6 +99,14 @@ export default function DashboardTables() {
   const { data: chatSessions } = useSWR("/api/chat-sessions?limit=3", fetcher, {
     refreshInterval: 5000,
   });
+  // New: fetch last active times
+  const { data: lastActive } = useSWR(
+    "/api/admin/db/info/last-active",
+    fetcher,
+    {
+      refreshInterval: 5000,
+    }
+  );
 
   const [verifications, setVerifications] = useState<any[]>([]);
 
@@ -110,8 +118,58 @@ export default function DashboardTables() {
     setVerifications((items) => items.filter((item) => item.id !== id));
   }
 
+  // --- Banner logic ---
+  let mostRecent: Date | null = null;
+  let timeSince: string = "";
+  if (lastActive) {
+    const lastMessage = lastActive.lastMessage
+      ? new Date(lastActive.lastMessage)
+      : null;
+    const lastAccess = lastActive.lastAccess
+      ? new Date(lastActive.lastAccess)
+      : null;
+    if (lastMessage && lastAccess) {
+      mostRecent = lastMessage > lastAccess ? lastMessage : lastAccess;
+    } else if (lastMessage) {
+      mostRecent = lastMessage;
+    } else if (lastAccess) {
+      mostRecent = lastAccess;
+    }
+  }
+  const now = new Date();
+  let isActive = false;
+  if (mostRecent) {
+    const diffMs = now.getTime() - mostRecent.getTime();
+    isActive = diffMs < 2 * 60 * 1000; // 2 minutes
+    // Human readable time since
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) {
+      timeSince = `${diffSec} second${diffSec === 1 ? "" : "s"} ago`;
+    } else if (diffSec < 3600) {
+      const min = Math.floor(diffSec / 60);
+      timeSince = `${min} minute${min === 1 ? "" : "s"} ago`;
+    } else {
+      const hr = Math.floor(diffSec / 3600);
+      timeSince = `${hr} hour${hr === 1 ? "" : "s"} ago`;
+    }
+  } else {
+    timeSince = "No activity yet.";
+  }
+  // --- End banner logic ---
+
   return (
     <div className='space-y-8'>
+      {/* System Status Banner */}
+      <div
+        className={`w-full py-2 px-4 rounded text-center font-semibold mb-4 ${
+          isActive
+            ? "bg-green-100 text-green-800 border border-green-300"
+            : "bg-red-100 text-red-800 border border-red-300"
+        }`}
+      >
+        {isActive ? "System is active " : "System is not running or inactive "}(
+        {timeSince})
+      </div>
       {/* Latest Chats Section */}
       <div>
         <h2 className='text-xl font-bold mb-2'>Latest Sessions</h2>
