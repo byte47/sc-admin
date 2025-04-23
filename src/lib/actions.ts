@@ -45,15 +45,16 @@ export async function logAccessAction(
 export async function getAccessHistoryAction(
   page: number = 1,
   limit: number = 10,
-  search?: string
+  search?: string,
+  result?: "allow" | "block"
 ): Promise<{ items: HistoryItem[]; total: number }> {
-  const result = await getAccessHistory(page, limit, search);
+  const resultData = await getAccessHistory(page, limit, search, result);
   return {
-    items: result.items.map((item) => ({
+    items: resultData.items.map((item) => ({
       ...item,
       access_time: item.access_time.toISOString(),
     })),
-    total: result.total,
+    total: resultData.total,
   };
 }
 

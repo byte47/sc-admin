@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -19,13 +18,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import HistoryFilters from "./HistoryFilters";
 
 export const metadata: Metadata = {
   title: "Access History - Access Monitor",
   description: "View access history logs",
 };
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 50;
 
 interface PageProps {
   searchParams?: Promise<any>;
@@ -36,11 +36,13 @@ export default async function HistoryPage({ searchParams }: PageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const currentPage = Number(resolvedSearchParams.page) || 1;
   const searchTerm = resolvedSearchParams.search || "";
+  const resultFilter = resolvedSearchParams.result || "";
 
   const { items: historyItems, total } = await getAccessHistoryAction(
     currentPage,
     ITEMS_PER_PAGE,
-    searchTerm
+    searchTerm,
+    resultFilter || undefined
   );
 
   // Calculate pagination values
@@ -52,19 +54,14 @@ export default async function HistoryPage({ searchParams }: PageProps) {
     const maxVisiblePages = 5;
 
     if (totalPages <= maxVisiblePages) {
-      // Show all pages if total pages is less than max visible
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Always show first page
       pages.push(1);
-
       if (currentPage > 3) {
         pages.push("ellipsis");
       }
-
-      // Show current page and surrounding pages
       for (
         let i = Math.max(2, currentPage - 1);
         i <= Math.min(totalPages - 1, currentPage + 1);
@@ -72,18 +69,23 @@ export default async function HistoryPage({ searchParams }: PageProps) {
       ) {
         pages.push(i);
       }
-
       if (currentPage < totalPages - 2) {
         pages.push("ellipsis");
       }
-
-      // Always show last page
       if (totalPages > 1) {
         pages.push(totalPages);
       }
     }
-
     return pages;
+  };
+
+  // Helper to build query string
+  const buildQuery = (params: Record<string, any>) => {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", params.page);
+    if (params.search) query.set("search", params.search);
+    if (params.result) query.set("result", params.result);
+    return `?${query.toString()}`;
   };
 
   return (
@@ -96,20 +98,13 @@ export default async function HistoryPage({ searchParams }: PageProps) {
         <CardHeader>
           <div className='flex justify-between items-center'>
             <CardTitle>Recent Access Attempts ({total})</CardTitle>
-            <div className='w-64'>
-              <Input
-                type='search'
-                placeholder='Search by name, slug, or reason...'
-                defaultValue={searchTerm}
-                className='w-full'
-              />
-            </div>
+            <HistoryFilters />
           </div>
         </CardHeader>
         <CardContent>
           {historyItems.length === 0 ? (
             <p className='text-muted-foreground text-center py-4'>
-              {searchTerm
+              {searchTerm || resultFilter
                 ? "No results found."
                 : "No access history to display."}
             </p>
@@ -159,9 +154,11 @@ export default async function HistoryPage({ searchParams }: PageProps) {
                       {currentPage > 1 && (
                         <PaginationItem>
                           <PaginationPrevious
-                            href={`?page=${currentPage - 1}${
-                              searchTerm ? `&search=${searchTerm}` : ""
-                            }`}
+                            href={buildQuery({
+                              page: currentPage - 1,
+                              search: searchTerm,
+                              result: resultFilter,
+                            })}
                           />
                         </PaginationItem>
                       )}
@@ -172,9 +169,11 @@ export default async function HistoryPage({ searchParams }: PageProps) {
                             <PaginationEllipsis />
                           ) : (
                             <PaginationLink
-                              href={`?page=${pageNum}${
-                                searchTerm ? `&search=${searchTerm}` : ""
-                              }`}
+                              href={buildQuery({
+                                page: pageNum,
+                                search: searchTerm,
+                                result: resultFilter,
+                              })}
                               isActive={pageNum === currentPage}
                             >
                               {pageNum}
@@ -186,9 +185,11 @@ export default async function HistoryPage({ searchParams }: PageProps) {
                       {currentPage < totalPages && (
                         <PaginationItem>
                           <PaginationNext
-                            href={`?page=${currentPage + 1}${
-                              searchTerm ? `&search=${searchTerm}` : ""
-                            }`}
+                            href={buildQuery({
+                              page: currentPage + 1,
+                              search: searchTerm,
+                              result: resultFilter,
+                            })}
                           />
                         </PaginationItem>
                       )}

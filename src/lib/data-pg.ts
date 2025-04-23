@@ -45,28 +45,61 @@ export async function addAccessHistory(
 export async function getAccessHistory(
   page: number = 1,
   limit: number = 10,
-  search?: string
+  search?: string,
+  result?: "allow" | "block"
 ): Promise<{ items: AccessHistory[]; total: number }> {
   const client = await pool.connect();
   try {
     const offset = (page - 1) * limit;
-    let whereClause = "";
-    const params: any[] = [limit, offset];
+
+    // For items query
+    const whereClauses: string[] = [];
+    const itemsParams: any[] = [limit, offset];
+    let itemParamIndex = 3;
+
+    // For count query
+    const countWhereClauses: string[] = [];
+    const countParams: any[] = [];
+    let countParamIndex = 1;
 
     if (search) {
-      whereClause = `
-        WHERE 
-          LOWER(name) LIKE LOWER($3) OR 
-          LOWER(slug) LIKE LOWER($3) OR 
-          LOWER(COALESCE(reason, '')) LIKE LOWER($3)
-      `;
-      params.push(`%${search}%`);
+      whereClauses.push(`(
+        LOWER(name) LIKE LOWER($${itemParamIndex}) OR 
+        LOWER(slug) LIKE LOWER($${itemParamIndex}) OR 
+        LOWER(COALESCE(reason, '')) LIKE LOWER($${itemParamIndex})
+      )`);
+      itemsParams.push(`%${search}%`);
+      itemParamIndex++;
+
+      countWhereClauses.push(`(
+        LOWER(name) LIKE LOWER($${countParamIndex}) OR 
+        LOWER(slug) LIKE LOWER($${countParamIndex}) OR 
+        LOWER(COALESCE(reason, '')) LIKE LOWER($${countParamIndex})
+      )`);
+      countParams.push(`%${search}%`);
+      countParamIndex++;
     }
+    if (result) {
+      whereClauses.push(`result = $${itemParamIndex}`);
+      itemsParams.push(result);
+      itemParamIndex++;
+
+      countWhereClauses.push(`result = $${countParamIndex}`);
+      countParams.push(result);
+      countParamIndex++;
+    }
+
+    const whereClause =
+      whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countWhereClause =
+      countWhereClauses.length > 0
+        ? `WHERE ${countWhereClauses.join(" AND ")}`
+        : "";
 
     const countQuery = `
       SELECT COUNT(*) 
       FROM access_history
-      ${whereClause}
+      ${countWhereClause}
     `;
 
     const itemsQuery = `
@@ -78,8 +111,8 @@ export async function getAccessHistory(
     `;
 
     const [countResult, itemsResult] = await Promise.all([
-      client.query(countQuery, search ? [params[2]] : []),
-      client.query(itemsQuery, params),
+      client.query(countQuery, countParams),
+      client.query(itemsQuery, itemsParams),
     ]);
 
     return {

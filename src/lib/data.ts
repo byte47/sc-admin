@@ -57,16 +57,56 @@ export async function logAccess(
 }
 
 export async function getAccessHistory(
-  limit = 100,
-  offset = 0
-): Promise<HistoryItem[]> {
-  const { rows } = await db.query(
-    `SELECT * FROM access_history
-     ORDER BY access_time DESC
-     LIMIT $1 OFFSET $2`,
-    [limit, offset]
+  page: number = 1,
+  limit: number = 10,
+  search?: string,
+  result?: "allow" | "block"
+): Promise<{ items: HistoryItem[]; total: number }> {
+  const whereClauses: string[] = [];
+  const params: any[] = [];
+  let paramIndex = 1;
+
+  if (search) {
+    whereClauses.push(`(
+      LOWER(name) LIKE LOWER($${paramIndex}) OR 
+      LOWER(slug) LIKE LOWER($${paramIndex}) OR 
+      LOWER(COALESCE(reason, '')) LIKE LOWER($${paramIndex})
+    )`);
+    params.push(`%${search}%`);
+    paramIndex++;
+  }
+  if (result) {
+    whereClauses.push(`result = $${paramIndex}`);
+    params.push(result);
+    paramIndex++;
+  }
+  const whereClause =
+    whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+
+  const offset = (page - 1) * limit;
+
+  const countQuery = `
+    SELECT COUNT(*) FROM access_history
+    ${whereClause}
+  `;
+  const itemsQuery = `
+    SELECT * FROM access_history
+    ${whereClause}
+    ORDER BY access_time DESC
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+  `;
+  params.push(limit, offset);
+
+  const countResult = await db.query(
+    countQuery,
+    params.slice(0, paramIndex - 1)
   );
-  return rows;
+  const itemsResult = await db.query(itemsQuery, params);
+
+  return {
+    items: itemsResult.rows,
+    total: parseInt(countResult.rows[0].count),
+  };
 }
 
 // Blocked list operations
