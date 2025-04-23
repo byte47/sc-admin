@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import Link from "next/link";
 import {
   getVerificationQueueAction,
-  getAccessHistoryAction,
   getBlockedNamesAction,
   getBlockedSlugsAction,
   getAllowedNamesAction,
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
 export default async function StatsPage() {
   // Get stats
   const pendingVerifications = await getVerificationQueueAction("pending");
-  const recentHistory = await getAccessHistoryAction(5, 0);
+  // const recentHistory = await getAccessHistoryAction(5, 0);
   const blockedNames = await getBlockedNamesAction(1, 1000000);
   const blockedSlugs = await getBlockedSlugsAction(1, 1000000);
   const allowedNames = await getAllowedNamesAction(1, 1000000);
@@ -37,15 +36,6 @@ export default async function StatsPage() {
   // Calculate total counts for blocked and allowed items
   const totalBlockedItems = blockedNames.total + blockedSlugs.total;
   const totalAllowedItems = allowedNames.total + allowedSlugs.total;
-
-  // Calculate summary stats
-  const accessCount = recentHistory.items.length;
-  const allowedCount = recentHistory.items.filter(
-    (item: any) => item.result === "allow"
-  ).length;
-  const blockedCount = recentHistory.items.filter(
-    (item: any) => item.result === "block"
-  ).length;
 
   // Time ranges
   const now = new Date();
