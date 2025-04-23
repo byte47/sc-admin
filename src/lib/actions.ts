@@ -29,6 +29,8 @@ import {
   isAllowedSlug,
   isBlockedName,
   isAllowedName,
+  getAccessHistoryCountByTimeRange,
+  getAccessLeaderboardByName,
 } from "./data-pg";
 
 // Access history operations
@@ -56,6 +58,15 @@ export async function getAccessHistoryAction(
     })),
     total: resultData.total,
   };
+}
+
+// Returns the count of access_history rows in the given time range, optionally filtered by result
+export async function getAccessHistoryCountByTimeRangeAction(
+  startTime: Date,
+  endTime: Date,
+  result?: "allow" | "block"
+): Promise<number> {
+  return await getAccessHistoryCountByTimeRange(startTime, endTime, result);
 }
 
 // Blocked names operations
@@ -336,4 +347,11 @@ export async function getMessagesBySlugAction(
     time: item.time,
     created_at: item.created_at,
   }));
+}
+
+export async function getAccessLeaderboardByNameAction(
+  limit: number = 10,
+  offset: number = 0
+): Promise<{ name: string; count: number }[]> {
+  return await getAccessLeaderboardByName(limit, offset);
 }

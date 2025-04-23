@@ -124,6 +124,27 @@ export async function getAccessHistory(
   }
 }
 
+// Returns the count of access_history rows in the given time range, optionally filtered by result
+export async function getAccessHistoryCountByTimeRange(
+  startTime: Date,
+  endTime: Date,
+  result?: "allow" | "block"
+): Promise<number> {
+  const client = await pool.connect();
+  try {
+    let query = `SELECT COUNT(*) FROM access_history WHERE access_time >= $1 AND access_time <= $2`;
+    const params: any[] = [startTime, endTime];
+    if (result) {
+      query += ` AND result = $3`;
+      params.push(result);
+    }
+    const res = await client.query(query, params);
+    return parseInt(res.rows[0].count);
+  } finally {
+    client.release();
+  }
+}
+
 // Blocked Names Functions
 export async function addToBlockedNames(value: string) {
   debugLog("addToBlockedNames called with value:", value);
@@ -627,6 +648,30 @@ export async function isAllowedName(name: string): Promise<boolean> {
     const query = `SELECT 1 FROM allowed_names WHERE value ILIKE $1 LIMIT 1`;
     const result = await client.query(query, [name]);
     return (result.rowCount ?? 0) > 0;
+  } finally {
+    client.release();
+  }
+}
+
+// Leaderboard: Get access attempts grouped by name, ordered by count desc
+export async function getAccessLeaderboardByName(
+  limit: number = 10,
+  offset: number = 0
+): Promise<{ name: string; count: number }[]> {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT name, COUNT(*) as count
+      FROM access_history
+      GROUP BY name
+      ORDER BY count DESC
+      LIMIT $1 OFFSET $2
+    `;
+    const result = await client.query(query, [limit, offset]);
+    return result.rows.map((row: any) => ({
+      name: row.name,
+      count: Number(row.count),
+    }));
   } finally {
     client.release();
   }
