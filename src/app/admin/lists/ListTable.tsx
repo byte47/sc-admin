@@ -44,6 +44,13 @@ interface ListTableProps {
 
 const ITEMS_PER_PAGE = 10;
 
+function buildQuery(baseQueryParam: string, page: number, searchTerm: string) {
+  const params = new URLSearchParams();
+  if (page > 1) params.set(baseQueryParam, page.toString());
+  if (searchTerm) params.set(`${baseQueryParam}Search`, searchTerm);
+  return `?${params.toString()}`;
+}
+
 export default function ListTable({
   items,
   totalItems,
@@ -60,8 +67,9 @@ export default function ListTable({
   );
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+  // Update URL when debounced search term changes
   React.useEffect(() => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     if (debouncedSearchTerm) {
       params.set(`${baseQueryParam}Search`, debouncedSearchTerm);
       params.set(baseQueryParam, "1"); // Reset to first page on search
@@ -69,7 +77,8 @@ export default function ListTable({
       params.delete(`${baseQueryParam}Search`);
     }
     router.push(`?${params.toString()}`);
-  }, [debouncedSearchTerm, router, searchParams, baseQueryParam]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm]);
 
   // Calculate pagination values
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
@@ -80,19 +89,14 @@ export default function ListTable({
     const maxVisiblePages = 5;
 
     if (totalPages <= maxVisiblePages) {
-      // Show all pages if total pages is less than max visible
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Always show first page
       pages.push(1);
-
       if (currentPage > 3) {
         pages.push("ellipsis");
       }
-
-      // Show current page and surrounding pages
       for (
         let i = Math.max(2, currentPage - 1);
         i <= Math.min(totalPages - 1, currentPage + 1);
@@ -100,28 +104,18 @@ export default function ListTable({
       ) {
         pages.push(i);
       }
-
       if (currentPage < totalPages - 2) {
         pages.push("ellipsis");
       }
-
-      // Always show last page
       if (totalPages > 1) {
         pages.push(totalPages);
       }
     }
-
     return pages;
   };
 
-  const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set(baseQueryParam, page.toString());
-    router.push(`?${params.toString()}`);
-  };
-
   return (
-    <>
+    <div>
       <div className='flex flex-col space-y-4'>
         <div className='flex justify-between items-center'>
           <div className='text-sm text-muted-foreground'>
@@ -176,11 +170,15 @@ export default function ListTable({
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      href='#'
-                      onClick={(e: React.MouseEvent) => {
-                        e.preventDefault();
-                        if (currentPage > 1) handlePageChange(currentPage - 1);
-                      }}
+                      href={
+                        currentPage > 1
+                          ? buildQuery(
+                              baseQueryParam,
+                              currentPage - 1,
+                              searchTerm
+                            )
+                          : undefined
+                      }
                       className={
                         currentPage === 1
                           ? "pointer-events-none opacity-50"
@@ -195,11 +193,11 @@ export default function ListTable({
                         <PaginationEllipsis />
                       ) : (
                         <PaginationLink
-                          href='#'
-                          onClick={(e: React.MouseEvent) => {
-                            e.preventDefault();
-                            handlePageChange(pageNum);
-                          }}
+                          href={buildQuery(
+                            baseQueryParam,
+                            pageNum as number,
+                            searchTerm
+                          )}
                           isActive={currentPage === pageNum}
                         >
                           {pageNum}
@@ -210,12 +208,15 @@ export default function ListTable({
 
                   <PaginationItem>
                     <PaginationNext
-                      href='#'
-                      onClick={(e: React.MouseEvent) => {
-                        e.preventDefault();
-                        if (currentPage < totalPages)
-                          handlePageChange(currentPage + 1);
-                      }}
+                      href={
+                        currentPage < totalPages
+                          ? buildQuery(
+                              baseQueryParam,
+                              currentPage + 1,
+                              searchTerm
+                            )
+                          : undefined
+                      }
                       className={
                         currentPage === totalPages
                           ? "pointer-events-none opacity-50"
@@ -229,6 +230,6 @@ export default function ListTable({
           )}
         </>
       )}
-    </>
+    </div>
   );
 }

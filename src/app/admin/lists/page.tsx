@@ -145,7 +145,7 @@ export default async function ListsPage({ searchParams }: PageProps) {
                 emptyMessage='No blocked names'
                 removeRoute='/api/lists/blocked-names/remove'
                 listType='blocked-names'
-                baseQueryParam='blockedNamesPage'
+                baseQueryParam='blockedNames'
               />
             </TabsContent>
 
@@ -157,7 +157,7 @@ export default async function ListsPage({ searchParams }: PageProps) {
                 emptyMessage='No blocked slugs'
                 removeRoute='/api/lists/blocked-slugs/remove'
                 listType='blocked-slugs'
-                baseQueryParam='blockedSlugsPage'
+                baseQueryParam='blockedSlugs'
               />
             </TabsContent>
 
@@ -169,7 +169,7 @@ export default async function ListsPage({ searchParams }: PageProps) {
                 emptyMessage='No allowed names'
                 removeRoute='/api/lists/allowed-names/remove'
                 listType='allowed-names'
-                baseQueryParam='allowedNamesPage'
+                baseQueryParam='allowedNames'
               />
             </TabsContent>
 
@@ -181,7 +181,7 @@ export default async function ListsPage({ searchParams }: PageProps) {
                 emptyMessage='No allowed slugs'
                 removeRoute='/api/lists/allowed-slugs/remove'
                 listType='allowed-slugs'
-                baseQueryParam='allowedSlugsPage'
+                baseQueryParam='allowedSlugs'
               />
             </TabsContent>
           </Tabs>
