@@ -115,9 +115,9 @@ export default function ListTable({
   };
 
   return (
-    <div>
+    <div className='overflow-x-auto'>
       <div className='flex flex-col space-y-4'>
-        <div className='flex justify-between items-center'>
+        <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2'>
           <div className='text-sm text-muted-foreground'>
             {totalItems} {totalItems === 1 ? "item" : "items"}
           </div>
@@ -128,7 +128,7 @@ export default function ListTable({
           placeholder='Search...'
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className='max-w-sm'
+          className='max-w-full sm:max-w-sm'
         />
       </div>
 
@@ -138,7 +138,7 @@ export default function ListTable({
         </p>
       ) : (
         <>
-          <Table>
+          <Table className='min-w-[320px] text-xs sm:text-sm'>
             <TableHeader>
               <TableRow>
                 <TableHead>Value</TableHead>
@@ -148,12 +148,14 @@ export default function ListTable({
             <TableBody>
               {items.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className='font-medium'>{item.value}</TableCell>
+                  <TableCell className='font-medium break-words max-w-[120px] sm:max-w-none'>
+                    {item.value}
+                  </TableCell>
                   <TableCell className='text-right'>
                     <form action={`${removeRoute}?id=${item.id}`} method='POST'>
                       <button
                         type='submit'
-                        className='text-sm text-red-500 hover:text-red-700'
+                        className='text-xs sm:text-sm text-red-500 hover:text-red-700'
                       >
                         Remove
                       </button>

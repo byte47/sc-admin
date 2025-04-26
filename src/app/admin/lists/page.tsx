@@ -13,11 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ListTable from "./ListTable";
-import ListForm from "./ListForm";
-import BulkImportForm from "@/components/BulkImportForm";
-import BatchExportButton from "@/components/BatchExportButton";
 
 export const metadata: Metadata = {
   title: "Manage Lists | Access Monitor",
@@ -84,107 +79,53 @@ export default async function ListsPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      {/* Forms Section */}
-      <div className='grid grid-cols-1 gap-6'>
-        <Tabs defaultValue='single'>
-          <TabsList className='mb-4'>
-            <TabsTrigger value='single'>Add Single Item</TabsTrigger>
-            <TabsTrigger value='bulk'>Bulk Import</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value='single'>
-            <Card>
-              <CardHeader>
-                <CardTitle>Add to List</CardTitle>
-                <CardDescription>
-                  Add a new item to one of the lists
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ListForm />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value='bulk'>
-            <BulkImportForm />
-          </TabsContent>
-        </Tabs>
-      </div>
-
       {/* Lists Section */}
       <Card>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <div>
-            <CardTitle>Current Lists</CardTitle>
-            <CardDescription>
-              View and manage current list items
-            </CardDescription>
-          </div>
-          <BatchExportButton
-            blockedNames={blockedNames.items}
-            blockedSlugs={blockedSlugs.items}
-            allowedNames={allowedNames.items}
-            allowedSlugs={allowedSlugs.items}
-          />
+        <CardHeader>
+          <CardTitle>Manage List Pages</CardTitle>
+          <CardDescription>
+            Select a list to view and manage its items.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue='blocked-names'>
-            <TabsList className='grid grid-cols-4 mb-4'>
-              <TabsTrigger value='blocked-names'>Blocked Names</TabsTrigger>
-              <TabsTrigger value='blocked-slugs'>Blocked Slugs</TabsTrigger>
-              <TabsTrigger value='allowed-names'>Allowed Names</TabsTrigger>
-              <TabsTrigger value='allowed-slugs'>Allowed Slugs</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value='blocked-names'>
-              <ListTable
-                items={blockedNames.items}
-                totalItems={blockedNames.total}
-                currentPage={blockedNamesPage}
-                emptyMessage='No blocked names'
-                removeRoute='/api/lists/blocked-names/remove'
-                listType='blocked-names'
-                baseQueryParam='blockedNames'
-              />
-            </TabsContent>
-
-            <TabsContent value='blocked-slugs'>
-              <ListTable
-                items={blockedSlugs.items}
-                totalItems={blockedSlugs.total}
-                currentPage={blockedSlugsPage}
-                emptyMessage='No blocked slugs'
-                removeRoute='/api/lists/blocked-slugs/remove'
-                listType='blocked-slugs'
-                baseQueryParam='blockedSlugs'
-              />
-            </TabsContent>
-
-            <TabsContent value='allowed-names'>
-              <ListTable
-                items={allowedNames.items}
-                totalItems={allowedNames.total}
-                currentPage={allowedNamesPage}
-                emptyMessage='No allowed names'
-                removeRoute='/api/lists/allowed-names/remove'
-                listType='allowed-names'
-                baseQueryParam='allowedNames'
-              />
-            </TabsContent>
-
-            <TabsContent value='allowed-slugs'>
-              <ListTable
-                items={allowedSlugs.items}
-                totalItems={allowedSlugs.total}
-                currentPage={allowedSlugsPage}
-                emptyMessage='No allowed slugs'
-                removeRoute='/api/lists/allowed-slugs/remove'
-                listType='allowed-slugs'
-                baseQueryParam='allowedSlugs'
-              />
-            </TabsContent>
-          </Tabs>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+            <a
+              href='/admin/lists/blocked-names'
+              className='block p-4 border rounded hover:bg-muted transition'
+            >
+              <div className='font-semibold'>Blocked Names</div>
+              <div className='text-sm text-muted-foreground'>
+                View and manage blocked names
+              </div>
+            </a>
+            <a
+              href='/admin/lists/blocked-slugs'
+              className='block p-4 border rounded hover:bg-muted transition'
+            >
+              <div className='font-semibold'>Blocked Slugs</div>
+              <div className='text-sm text-muted-foreground'>
+                View and manage blocked slugs
+              </div>
+            </a>
+            <a
+              href='/admin/lists/allowed-names'
+              className='block p-4 border rounded hover:bg-muted transition'
+            >
+              <div className='font-semibold'>Allowed Names</div>
+              <div className='text-sm text-muted-foreground'>
+                View and manage allowed names
+              </div>
+            </a>
+            <a
+              href='/admin/lists/allowed-slugs'
+              className='block p-4 border rounded hover:bg-muted transition'
+            >
+              <div className='font-semibold'>Allowed Slugs</div>
+              <div className='text-sm text-muted-foreground'>
+                View and manage allowed slugs
+              </div>
+            </a>
+          </div>
         </CardContent>
       </Card>
 

@@ -23,6 +23,12 @@ import {
   addToBlockedSlugsAction,
 } from "@/lib/actions";
 
+export type ListType =
+  | "allowed-names"
+  | "allowed-slugs"
+  | "blocked-names"
+  | "blocked-slugs";
+
 // Define form schema
 const formSchema = z.object({
   value: z.string().min(1, "Value is required"),
@@ -36,7 +42,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function ListForm() {
+export default function ListForm({ listType }: { listType: ListType }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showSlugPreview, setShowSlugPreview] = useState(false);
@@ -47,13 +53,12 @@ export default function ListForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       value: "",
-      listType: "blocked-names",
+      listType,
     },
   });
 
   // Update slug preview when value changes
   const value = form.watch("value");
-  const listType = form.watch("listType");
 
   // Update slug preview when value or list type changes
   useEffect(() => {
@@ -73,7 +78,7 @@ export default function ListForm() {
 
     try {
       // Add to the appropriate list
-      const { value, listType } = data;
+      const { value } = data;
 
       if (listType === "allowed-names") {
         await addToAllowedNamesAction(value);
@@ -119,70 +124,7 @@ export default function ListForm() {
             </FormItem>
           )}
         />
-
-        <FormField
-          control={form.control}
-          name='listType'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>List</FormLabel>
-              <FormControl>
-                <div className='grid grid-cols-2 gap-2'>
-                  <div className='space-y-2 border rounded-md p-2'>
-                    <p className='text-sm font-medium'>Blocked</p>
-                    <label className='flex items-center space-x-2'>
-                      <input
-                        type='radio'
-                        value='blocked-names'
-                        checked={field.value === "blocked-names"}
-                        onChange={() => field.onChange("blocked-names")}
-                        className='w-4 h-4'
-                      />
-                      <span className='text-sm'>Names</span>
-                    </label>
-                    <label className='flex items-center space-x-2'>
-                      <input
-                        type='radio'
-                        value='blocked-slugs'
-                        checked={field.value === "blocked-slugs"}
-                        onChange={() => field.onChange("blocked-slugs")}
-                        className='w-4 h-4'
-                      />
-                      <span className='text-sm'>Slugs</span>
-                    </label>
-                  </div>
-
-                  <div className='space-y-2 border rounded-md p-2'>
-                    <p className='text-sm font-medium'>Allowed</p>
-                    <label className='flex items-center space-x-2'>
-                      <input
-                        type='radio'
-                        value='allowed-names'
-                        checked={field.value === "allowed-names"}
-                        onChange={() => field.onChange("allowed-names")}
-                        className='w-4 h-4'
-                      />
-                      <span className='text-sm'>Names</span>
-                    </label>
-                    <label className='flex items-center space-x-2'>
-                      <input
-                        type='radio'
-                        value='allowed-slugs'
-                        checked={field.value === "allowed-slugs"}
-                        onChange={() => field.onChange("allowed-slugs")}
-                        className='w-4 h-4'
-                      />
-                      <span className='text-sm'>Slugs</span>
-                    </label>
-                  </div>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type='submit' disabled={loading}>
+        <Button type='submit' disabled={loading} className='w-full sm:w-auto'>
           {loading ? "Adding..." : "Add to List"}
         </Button>
       </form>
