@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
     // Remove from allowed slugs list using server action
     await removeFromAllowedSlugsAction(id.toString());
 
-    // Redirect back to the lists page
+    // Redirect back to the allowed slugs page
     return NextResponse.redirect(
-      new URL("/admin/lists?tab=allowed", request.url)
+      new URL("/admin/lists/allowed-slugs", request.url)
     );
   } catch (error) {
     console.error("Error removing from allowed slugs list:", error);
