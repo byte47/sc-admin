@@ -330,22 +330,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Converts "3:16 PM" to ISO timestamp (today's date assumed)
+// Converts "3:16 PM" to ISO timestamp (today's date assumed, IST)
 export function parseTimestamp(timeStr: string | null): string | null {
   if (!timeStr) return null;
-
-  // Helper to determine if today is in DST for PT (PDT)
-  function isPacificDaylightTime(date: Date): boolean {
-    // US DST starts 2nd Sunday in March, ends 1st Sunday in November
-    const year = date.getFullYear();
-    // 2nd Sunday in March
-    const start = new Date(Date.UTC(year, 2, 8, 10)); // 2am PT = 10am UTC
-    start.setUTCDate(8 + ((7 - start.getUTCDay()) % 7));
-    // 1st Sunday in November
-    const end = new Date(Date.UTC(year, 10, 1, 9)); // 2am PT = 9am UTC
-    end.setUTCDate(1 + ((7 - end.getUTCDay()) % 7));
-    return date >= start && date < end;
-  }
 
   const [time, modifier] = timeStr.split(" ");
   let hours = Number(time.split(":")[0]);
@@ -354,21 +341,16 @@ export function parseTimestamp(timeStr: string | null): string | null {
   if (modifier === "PM" && hours < 12) hours += 12;
   if (modifier === "AM" && hours === 12) hours = 0;
 
-  // Create a date for today in PT
+  // Create a date for today in IST (Asia/Kolkata, UTC+5:30)
   const now = new Date();
-  // Get today's date parts in UTC
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth();
-  const day = now.getUTCDate();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const day = now.getDate();
 
-  // Determine if today is in DST for PT
-  const isDST = isPacificDaylightTime(new Date(Date.UTC(year, month, day)));
-  const PT_OFFSET = isDST ? -7 : -8;
-
-  // Create a UTC date for the given PT time
-  // PT is UTC-8 or UTC-7, so to get UTC, add the offset
+  // Construct a Date object in UTC for the IST time
+  // IST is UTC+5:30, so subtract 5 hours 30 minutes to get UTC
   const utcDate = new Date(
-    Date.UTC(year, month, day, hours - PT_OFFSET, minutes, 0, 0)
+    Date.UTC(year, month, day, hours - 5, minutes - 30, 0, 0)
   );
   return utcDate.toISOString();
 }
