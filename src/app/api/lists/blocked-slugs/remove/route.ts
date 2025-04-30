@@ -26,9 +26,7 @@ export async function POST(request: NextRequest) {
     await removeFromBlockedSlugsAction(id.toString());
 
     // Redirect back to the blocked slugs page
-    return NextResponse.redirect(
-      new URL("/admin/lists/blocked-slugs", request.url)
-    );
+    return NextResponse.redirect("/admin/lists/blocked-slugs");
   } catch (error) {
     console.error("Error removing from blocked slugs list:", error);
     return NextResponse.json(

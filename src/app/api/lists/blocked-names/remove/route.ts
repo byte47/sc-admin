@@ -26,9 +26,7 @@ export async function POST(request: NextRequest) {
     await removeFromBlockedNamesAction(id.toString());
 
     // Redirect back to the blocked names page
-    return NextResponse.redirect(
-      new URL("/admin/lists/blocked-names", request.url)
-    );
+    return NextResponse.redirect("/admin/lists/blocked-names");
   } catch (error) {
     console.error("Error removing from blocked names list:", error);
     return NextResponse.json(

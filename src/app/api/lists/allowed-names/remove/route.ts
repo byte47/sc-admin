@@ -25,9 +25,7 @@ export async function POST(request: NextRequest) {
     await removeFromAllowedNamesAction(id.toString());
 
     // Redirect back to the allowed names page
-    return NextResponse.redirect(
-      new URL("/admin/lists/allowed-names", request.url)
-    );
+    return NextResponse.redirect("/admin/lists/allowed-names");
   } catch (error) {
     console.error("Error removing from allowed names list:", error);
     return NextResponse.json(
