@@ -414,6 +414,15 @@ export async function removeFromAllowedSlugs(value: string) {
 export async function addToVerificationQueue(name: string, slug: string) {
   const client = await pool.connect();
   try {
+    // Check if the name already exists in the queue and is not reviewed
+    const existsQuery = `
+      SELECT 1 FROM verification_queue WHERE name = $1 AND status = 'pending' LIMIT 1
+    `;
+    const existsResult = await client.query(existsQuery, [name]);
+    if ((existsResult.rowCount ?? 0) > 0) {
+      // Skip insertion if already exists and not reviewed
+      return null;
+    }
     const query = `
       INSERT INTO verification_queue (name, slug)
       VALUES ($1, $2)
