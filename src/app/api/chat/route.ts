@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     let shouldSendTelegramAlert = false;
     let alertMessage = "";
     let is_flagged = false;
+    let anyFlagged = false; // Track if any message is flagged
     const messagesToMe = chatMessages.filter((msg) => msg.to === "Me");
     if (messagesToMe.length > 2) {
       shouldSendTelegramAlert = true;
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
         alertMessage = `ALERT: '${msg.text}' - '${msg.from}'`;
       }
       is_flagged = is_blacklisted || is_boy_flag;
+      if (is_flagged) anyFlagged = true; // Set if any message is flagged
       return {
         ...msg,
         is_flagged,
@@ -67,7 +69,7 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    if (shouldSendTelegramAlert && alertMessage && !is_flagged) {
+    if (shouldSendTelegramAlert && alertMessage && !anyFlagged) {
       await sendTelegramAlert(alertMessage);
     }
 
