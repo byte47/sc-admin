@@ -82,11 +82,12 @@ function ChatBox({ session }: { session: any }) {
 
 export default function DashboardTables() {
   // Poll every 5 seconds
+  const [isPaused, setIsPaused] = useState(false);
   const { data: swrVerifications } = useSWR(
     "/api/verification-queue",
     fetcher,
     {
-      refreshInterval: 30000,
+      refreshInterval: isPaused ? undefined : 30000,
     }
   );
   const { data: history } = useSWR("/api/access-history?limit=30", fetcher, {
@@ -203,9 +204,18 @@ export default function DashboardTables() {
       </div>
       {/* Verification Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Verification Queue</CardTitle>
-          <CardDescription>Most recent pending items</CardDescription>
+        <CardHeader className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+          <div>
+            <CardTitle>Verification Queue</CardTitle>
+            <CardDescription>Most recent pending items</CardDescription>
+          </div>
+          <Button
+            variant={isPaused ? "secondary" : "outline"}
+            onClick={() => setIsPaused((p) => !p)}
+            className='mt-2 sm:mt-0'
+          >
+            {isPaused ? "Resume Auto-Refresh" : "Pause Auto-Refresh"}
+          </Button>
         </CardHeader>
         <CardContent>
           {!verifications || verifications.length === 0 ? (
