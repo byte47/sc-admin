@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const dbMessages = [];
     let toMeCount = 0;
     let toMeFrom = "";
-    let toMeTexts = [];
+    const toMeTexts = [];
     for (const msg of chatMessages) {
       if (msg.from === "Me") {
         dbMessages.push({
