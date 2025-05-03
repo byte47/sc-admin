@@ -526,10 +526,27 @@ export async function getMessages(
       paramIndex++;
     }
 
+    const countParams: any[] = [];
+    let countWhereClause = "";
+
+    if (lastHourOnly) {
+      whereClause = "WHERE created_at >= NOW() - INTERVAL '30 minutes'";
+      countWhereClause = whereClause;
+    }
+
+    if (search) {
+      if (countWhereClause) {
+        countWhereClause += ` AND (LOWER(\"from\") LIKE LOWER($1) OR LOWER(\"to\") LIKE LOWER($1) OR LOWER(text) LIKE LOWER($1))`;
+      } else {
+        countWhereClause = `WHERE (LOWER(\"from\") LIKE LOWER($1) OR LOWER(\"to\") LIKE LOWER($1) OR LOWER(text) LIKE LOWER($1))`;
+      }
+      countParams.push(`%${search}%`);
+    }
+
     const countQuery = `
       SELECT COUNT(*) 
       FROM messages
-      ${whereClause}
+      ${countWhereClause}
     `;
 
     const itemsQuery = `
@@ -541,7 +558,7 @@ export async function getMessages(
     `;
 
     const [countResult, itemsResult] = await Promise.all([
-      client.query(countQuery, params.slice(2)),
+      client.query(countQuery, countParams),
       client.query(itemsQuery, params),
     ]);
 
