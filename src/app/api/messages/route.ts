@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       debugLog("POST /api/messages - addBulkMessagesAction results", results);
 
       // Print each processed message to the console
-      messagesToStore.forEach((msg, idx) => {
+      messagesToStore.forEach((msg) => {
         console.log(`Processed message from '${msg.from}':`, msg.text);
       });
 
