@@ -21,6 +21,11 @@ export async function POST(request: NextRequest) {
     // Extract chat messages from screencontent
     const chatMessages = extractChatData(screencontent);
 
+    // Log each chat message
+    chatMessages.forEach((msg, idx) => {
+      console.log(`Chat Message [${idx}]:`, msg);
+    });
+
     // Ignore if all messages are from 'Me'
     if (
       chatMessages.length > 0 &&
