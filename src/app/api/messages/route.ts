@@ -46,6 +46,9 @@ export async function POST(request: NextRequest) {
     // Get the name and messages from the validated data
     const { name, messages } = result.data;
 
+    // Log all messages to the console
+    console.log("Received messages:", { name, messages });
+
     try {
       // Store the messages without access checking
       const messagesToStore = messages.map((text: string) => ({
@@ -57,6 +60,11 @@ export async function POST(request: NextRequest) {
       }));
       const results = await addBulkMessagesAction(messagesToStore);
       debugLog("POST /api/messages - addBulkMessagesAction results", results);
+
+      // Print each processed message to the console
+      messagesToStore.forEach((msg, idx) => {
+        console.log(`Processed message from '${msg.from}':`, msg.text);
+      });
 
       // Check if any message was blocked or flagged
       const hasBlockedOrFlagged = results.some(
