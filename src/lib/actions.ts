@@ -308,7 +308,7 @@ export async function getMessagesAction(
   limit: number = 10,
   search?: string
 ): Promise<{ items: Message[]; total: number }> {
-  const result = await getMessages(page, limit, search, true);
+  const result = await getMessages(page, limit, search, false);
   return {
     items: result.items.map((item) => ({
       id: item.id,
@@ -316,6 +316,7 @@ export async function getMessagesAction(
       to: item.to,
       text: item.text,
       is_flagged: item.is_flagged,
+      is_blocked: item.is_blocked,
       time: item.time,
       created_at: item.created_at,
     })),

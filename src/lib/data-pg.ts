@@ -8,6 +8,7 @@ export interface Message {
   to: string;
   text: string;
   is_flagged: boolean;
+  is_blocked?: boolean;
   time: Date | null;
   created_at: Date;
 }

@@ -25,92 +25,48 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { getMessagesAction } from "@/lib/actions";
-import { BLACKLISTED_NAME_WORDS } from "@/lib/utils";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 100;
 
 interface MessagesTableProps {
-  searchParams?: Promise<any>;
-  params?: Promise<any>;
+  searchParams?: { [key: string]: any };
 }
 
 async function MessagesTable({ searchParams }: MessagesTableProps) {
-  const resolvedSearchParams = searchParams ? await searchParams : {};
-  const currentPage = Number(resolvedSearchParams.page) || 1;
-  const searchTerm = resolvedSearchParams.search || "";
+  const params = searchParams || {};
+  const page = Number(params.page) || 1;
+  const term = params.search || "";
 
-  const { items: messages, total } = await getMessagesAction(
-    currentPage,
+  const { items: msgs, total } = await getMessagesAction(
+    page,
     ITEMS_PER_PAGE,
-    searchTerm
+    term
   );
 
   // Calculate pagination values
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
   // Generate page numbers to display
-  const getPageNumbers = () => {
+  const getPages = () => {
     const pages: (number | "ellipsis")[] = [];
-    const maxVisiblePages = 5;
+    const maxPages = 5;
 
-    if (totalPages <= maxVisiblePages) {
-      // Show all pages if total pages is less than max visible
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+    if (totalPages <= maxPages) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      // Always show first page
       pages.push(1);
-
-      if (currentPage > 3) {
-        pages.push("ellipsis");
-      }
-
-      // Show current page and surrounding pages
+      if (page > 3) pages.push("ellipsis");
       for (
-        let i = Math.max(2, currentPage - 1);
-        i <= Math.min(totalPages - 1, currentPage + 1);
+        let i = Math.max(2, page - 1);
+        i <= Math.min(totalPages - 1, page + 1);
         i++
       ) {
         pages.push(i);
       }
-
-      if (currentPage < totalPages - 2) {
-        pages.push("ellipsis");
-      }
-
-      // Always show last page
-      if (totalPages > 1) {
-        pages.push(totalPages);
-      }
+      if (page < totalPages - 2) pages.push("ellipsis");
+      if (totalPages > 1) pages.push(totalPages);
     }
-
     return pages;
-  };
-
-  // Function to check if a message contains potentially problematic content
-  const checkMessageContent = (content: string) => {
-    // Convert to format used in processing
-    const processedContent = content.toLowerCase().replace(/\s+/g, "--");
-
-    // Check for B patterns (similar to addBulkMessagesAction)
-    const hasBPattern =
-      processedContent.split("-b-").length - 1 >= 2 ||
-      (processedContent.includes("-b-") && processedContent.includes("-boy-"));
-
-    // Check for blacklisted words
-    let hasBlacklistedWord = false;
-    for (const word of BLACKLISTED_NAME_WORDS) {
-      if (processedContent.includes(word.toLowerCase())) {
-        hasBlacklistedWord = true;
-        break;
-      }
-    }
-
-    return {
-      flagged: hasBPattern,
-      blocked: hasBlacklistedWord,
-    };
   };
 
   return (
@@ -124,19 +80,22 @@ async function MessagesTable({ searchParams }: MessagesTableProps) {
             </CardDescription>
           </div>
           <div className='w-64'>
-            <Input
-              type='search'
-              placeholder='Search messages...'
-              defaultValue={searchTerm}
-              className='w-full'
-            />
+            <form method='GET' action='' className='w-full'>
+              <Input
+                type='search'
+                name='search'
+                placeholder='Search messages...'
+                defaultValue={term}
+                className='w-full'
+              />
+            </form>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        {messages.length === 0 ? (
+        {msgs.length === 0 ? (
           <p className='text-center py-6 text-muted-foreground'>
-            {searchTerm
+            {term
               ? "No messages found matching your search."
               : "No messages found."}
           </p>
@@ -146,48 +105,40 @@ async function MessagesTable({ searchParams }: MessagesTableProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Slug</TableHead>
+                  <TableHead>Sender</TableHead>
+                  <TableHead>Recipient</TableHead>
                   <TableHead className='w-[40%]'>Message</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {messages.map((message) => {
-                  const { flagged, blocked } = checkMessageContent(
-                    message.text
-                  );
+                {msgs.map((msg) => {
+                  let status = "OK";
+                  let statusClass = "text-green-600";
+                  let rowClass = "";
+                  if (msg.is_blocked) {
+                    status = "Blocked";
+                    statusClass = "text-red-600 font-semibold";
+                    rowClass = "bg-red-50";
+                  } else if (msg.is_flagged) {
+                    status = "Flagged";
+                    statusClass = "text-amber-600 font-semibold";
+                    rowClass = "bg-yellow-50";
+                  }
                   return (
-                    <TableRow
-                      key={message.id}
-                      className={
-                        blocked ? "bg-red-50" : flagged ? "bg-yellow-50" : ""
-                      }
-                    >
-                      <TableCell>{message.id}</TableCell>
-                      <TableCell>{message.from}</TableCell>
-                      <TableCell>{message.to}</TableCell>
+                    <TableRow key={msg.id} className={rowClass}>
+                      <TableCell>{msg.id}</TableCell>
+                      <TableCell>{msg.from}</TableCell>
+                      <TableCell>{msg.to}</TableCell>
                       <TableCell className='max-w-xs truncate'>
-                        {message.text}
+                        {msg.text}
                       </TableCell>
                       <TableCell>
-                        {blocked && (
-                          <span className='text-red-600 font-semibold'>
-                            Blocked
-                          </span>
-                        )}
-                        {flagged && !blocked && (
-                          <span className='text-amber-600 font-semibold'>
-                            Flagged
-                          </span>
-                        )}
-                        {!flagged && !blocked && (
-                          <span className='text-green-600'>OK</span>
-                        )}
+                        <span className={statusClass}>{status}</span>
                       </TableCell>
                       <TableCell>
-                        {new Date(message.created_at).toLocaleString("en-US", {
+                        {new Date(msg.created_at).toLocaleString("en-US", {
                           timeZone: "Asia/Kolkata",
                         })}
                       </TableCell>
@@ -201,38 +152,36 @@ async function MessagesTable({ searchParams }: MessagesTableProps) {
               <div className='mt-4'>
                 <Pagination>
                   <PaginationContent>
-                    {currentPage > 1 && (
+                    {page > 1 && (
                       <PaginationItem>
                         <PaginationPrevious
-                          href={`?page=${currentPage - 1}${
-                            searchTerm ? `&search=${searchTerm}` : ""
+                          href={`?page=${page - 1}${
+                            term ? `&search=${term}` : ""
                           }`}
                         />
                       </PaginationItem>
                     )}
 
-                    {getPageNumbers().map((pageNum, idx) => (
-                      <PaginationItem key={`${pageNum}-${idx}`}>
-                        {pageNum === "ellipsis" ? (
+                    {getPages().map((p, idx) => (
+                      <PaginationItem key={`${p}-${idx}`}>
+                        {p === "ellipsis" ? (
                           <PaginationEllipsis />
                         ) : (
                           <PaginationLink
-                            href={`?page=${pageNum}${
-                              searchTerm ? `&search=${searchTerm}` : ""
-                            }`}
-                            isActive={pageNum === currentPage}
+                            href={`?page=${p}${term ? `&search=${term}` : ""}`}
+                            className={p === page ? "font-bold underline" : ""}
                           >
-                            {pageNum}
+                            {p}
                           </PaginationLink>
                         )}
                       </PaginationItem>
                     ))}
 
-                    {currentPage < totalPages && (
+                    {page < totalPages && (
                       <PaginationItem>
                         <PaginationNext
-                          href={`?page=${currentPage + 1}${
-                            searchTerm ? `&search=${searchTerm}` : ""
+                          href={`?page=${page + 1}${
+                            term ? `&search=${term}` : ""
                           }`}
                         />
                       </PaginationItem>
@@ -248,12 +197,12 @@ async function MessagesTable({ searchParams }: MessagesTableProps) {
   );
 }
 
-export default function MessagesPage({
+export default async function MessagesPage({
   searchParams,
 }: {
   searchParams?: Promise<any>;
-  params?: Promise<any>;
 }) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   return (
     <div className='space-y-6'>
       <div className='flex justify-between items-center'>
@@ -285,7 +234,7 @@ export default function MessagesPage({
         </CardContent>
       </Card>
       <Suspense fallback={<p>Loading messages...</p>}>
-        <MessagesTable searchParams={searchParams} />
+        <MessagesTable searchParams={resolvedSearchParams} />
       </Suspense>
     </div>
   );
