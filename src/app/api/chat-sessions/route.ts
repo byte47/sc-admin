@@ -43,10 +43,22 @@ function groupMessagesBySession(messages: Message[]): ChatSession[] {
   );
 }
 
+function isRecentMessage(msg: Message): boolean {
+  const msgTime =
+    typeof msg.created_at === "string"
+      ? new Date(msg.created_at)
+      : msg.created_at instanceof Date
+      ? msg.created_at
+      : new Date(String(msg.created_at));
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+  return msgTime >= thirtyMinutesAgo;
+}
+
 export async function GET() {
   // Get the latest 100 messages (to cover recent sessions)
   const { items } = await getMessagesAction(1, 100);
-  const sessions = groupMessagesBySession(items as Message[]);
+  const recentMessages = (items as Message[]).filter(isRecentMessage);
+  const sessions = groupMessagesBySession(recentMessages);
   // Return the top 3 sessions
   return NextResponse.json(sessions.slice(0, 3));
 }
